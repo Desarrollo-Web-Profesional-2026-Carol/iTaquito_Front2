@@ -339,7 +339,7 @@ const Login = () => {
 
       {/* Footer */}
       <p style={{ marginTop: "24px", color: C.textMuted, fontSize: "12px", textAlign: "center" }}>
-        © {new Date().getFullYear()} iTaquito · Hecho con ♥ en México
+        © {new Date().getFullYear()} 
       </p>
     </div>
   );

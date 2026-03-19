@@ -15,11 +15,10 @@ const Layout = ({ children }) => {
       flexDirection: 'column',
     }}>
       {/* Header en todas las páginas excepto login */}
-      {!isLoginPage && <Header />}
+      {!isLoginPage && isHomePage && <Header />}
       
       <main style={{ 
         flex: 1,
-        // Home ya tiene su propio fondo, no necesitamos sobrescribirlo
         backgroundColor: isHomePage ? 'transparent' : '#ECF0F1'
       }}>
         {children}
