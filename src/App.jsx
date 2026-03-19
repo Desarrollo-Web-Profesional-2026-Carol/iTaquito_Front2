@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';       
 import Tables from './pages/Tables';
 import Dashboard from './pages/Dashboard';
+import Cocineros from './pages/Cocineros';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -57,6 +58,15 @@ function AppContent() {
           element={
             <PrivateRoute>
               <Tables />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/cocineros"
+          element={
+            <PrivateRoute>
+              <Cocineros />
             </PrivateRoute>
           }
         />
