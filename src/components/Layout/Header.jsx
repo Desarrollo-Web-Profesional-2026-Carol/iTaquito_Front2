@@ -30,7 +30,7 @@ const NAV_CONFIG = {
     links: [
       { label: "Inicio",     path: "/home",      Icon: Home             },
       { label: "Menú",       path: "/menu",      Icon: UtensilsCrossed  },
-      { label: "Mi Pedido",  path: "/my-order",  Icon: ShoppingBag      },
+      { label: "Mi Pedido",  path: "/my-orders",  Icon: ShoppingBag      },
       { label: "Canciones",  path: "/songs",     Icon: Music            },
     ],
   },
