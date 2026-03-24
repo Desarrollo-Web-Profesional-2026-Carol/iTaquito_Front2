@@ -1,59 +1,15 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { productsService } from '../services/products';
 import { categoriesService } from '../services/categories';
 import { C, FONT, glow } from '../styles/designTokens';
+import Header from '../components/Layout/Header';
 import {
   Search, SlidersHorizontal, UtensilsCrossed,
-  Plus, Check, X, ChevronUp, ChevronDown, AlertCircle,
-  LogOut, Utensils, LayoutDashboard, TableProperties,
+  Plus, X, ChevronUp, ChevronDown, AlertCircle,
   Pencil, Trash2, Eye, EyeOff, Save, ImagePlus,
-  DollarSign, ToggleLeft, ToggleRight, Users, Package
+  DollarSign, ToggleLeft, ToggleRight, RefreshCw
 } from 'lucide-react';
-
-/* ─── NAV BUTTON ─────────────────────────────────────────────── */
-function NavBtn({ label, active, onClick, color, children }) {
-  const [hov, setHov] = useState(false);
-  const c = color || C.teal;
-  return (
-    <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ background: active ? `${c}18` : hov ? C.bgCardHov : 'transparent', border: `1.5px solid ${active ? c + '55' : hov ? C.border : 'transparent'}`, borderRadius: '8px', padding: '6px 12px', color: active ? c : hov ? C.textPrimary : C.textSecondary, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', transition: 'all 0.18s', flexShrink: 0 }}>
-      {children} {label}
-    </button>
-  );
-}
-
-/* ─── HEADER ADMIN ───────────────────────────────────────────── */
-function AdminHeader({ onLogout }) {
-  const navigate = useNavigate();
-  const path = window.location.pathname;
-  return (
-    <header style={{ background: C.bgAccent, borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 200, boxShadow: '0 2px 16px rgba(0,0,0,0.4)', fontFamily: FONT }}>
-      <div style={{ height: '3px', background: `linear-gradient(90deg, ${C.pink}, ${C.pink}88, transparent)`, boxShadow: `0 0 10px ${C.pink}66` }} />
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', height: '54px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div onClick={() => navigate('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${C.pink}22`, border: `1.5px solid ${C.pink}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: glow(C.pink, '33') }}>
-            <Utensils size={15} color={C.pink} />
-          </div>
-          <span style={{ color: C.cream, fontWeight: '800', fontSize: '16px' }}>iTaquito</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: `${C.pink}12`, border: `1px solid ${C.pink}33`, borderRadius: '20px', padding: '4px 10px', color: C.pink, fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Admin</div>
-        <div style={{ flex: 1 }} />
-        <NavBtn label="Dashboard" active={path === '/dashboard'} color={C.pink}   onClick={() => navigate('/dashboard')}><LayoutDashboard size={14} /></NavBtn>
-        <NavBtn label="Mesas"     active={path === '/tables'}    color={C.orange}  onClick={() => navigate('/tables')}><TableProperties size={14} /></NavBtn>
-        <NavBtn label="Menú"      active={path === '/menu'}      color={C.teal}    onClick={() => navigate('/menu')}><UtensilsCrossed size={14} /></NavBtn>
-        <NavBtn label="Usuarios"  active={path === '/users'}     color={C.purple}  onClick={() => navigate('/users')}><Users size={14} /></NavBtn>
-        <button onClick={onLogout}
-          style={{ background: `${C.pink}12`, border: `1px solid ${C.pink}33`, borderRadius: '8px', padding: '6px 12px', color: C.pink, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
-          onMouseEnter={e => { e.currentTarget.style.background = `${C.pink}22`; e.currentTarget.style.borderColor = C.pink; }}
-          onMouseLeave={e => { e.currentTarget.style.background = `${C.pink}12`; e.currentTarget.style.borderColor = `${C.pink}33`; }}>
-          <LogOut size={13} /> Salir
-        </button>
-      </div>
-    </header>
-  );
-}
 
 /* ─── ADMIN PRODUCT CARD ─────────────────────────────────────── */
 function AdminProductCard({ product, onEdit, onDelete, onToggleDisponible }) {
@@ -69,27 +25,20 @@ function AdminProductCard({ product, onEdit, onDelete, onToggleDisponible }) {
     <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{ background: hov ? C.bgCardHov : C.bgCard, border: `1.5px solid ${hov ? C.pink : C.border}`, borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'all 0.22s ease', transform: hov ? 'translateY(-3px)' : 'translateY(0)', boxShadow: hov ? '0 12px 28px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.2)', opacity: product.bActivo ? 1 : 0.5 }}>
 
-      {/* Imagen */}
       <div style={{ width: '100%', aspectRatio: '16/9', background: `${C.pink}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         {product.sImagenUrl
           ? <img src={product.sImagenUrl} alt={product.sNombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           : <UtensilsCrossed size={32} color={`${C.pink}55`} />}
-
-        {/* Badge categoría */}
         {product.categoria && (
           <div style={{ position: 'absolute', top: '8px', left: '8px', background: 'rgba(0,0,0,0.7)', borderRadius: '20px', padding: '3px 8px', color: C.textSecondary, fontSize: '10px', fontWeight: '700' }}>
             {product.categoria.sNombre}
           </div>
         )}
-
-        {/* Badge disponibilidad */}
         <div style={{ position: 'absolute', top: '8px', right: '8px' }}>
           <span style={{ background: product.bDisponible ? `${C.teal}dd` : `${C.pink}dd`, borderRadius: '20px', padding: '3px 8px', color: '#fff', fontSize: '10px', fontWeight: '700' }}>
             {product.bDisponible ? 'Disponible' : 'No disponible'}
           </span>
         </div>
-
-        {/* Overlay inactivo */}
         {!product.bActivo && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(15,13,11,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ background: C.bgAccent, border: `1px solid ${C.border}`, color: C.textMuted, borderRadius: '20px', padding: '4px 14px', fontSize: '12px', fontWeight: '700' }}>Inactivo</span>
@@ -97,7 +46,6 @@ function AdminProductCard({ product, onEdit, onDelete, onToggleDisponible }) {
         )}
       </div>
 
-      {/* Info */}
       <div style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <div>
           <h3 style={{ margin: '0 0 4px', color: C.textPrimary, fontWeight: '800', fontSize: '15px', lineHeight: 1.3 }}>{product.sNombre}</h3>
@@ -105,13 +53,10 @@ function AdminProductCard({ product, onEdit, onDelete, onToggleDisponible }) {
             <p style={{ margin: 0, color: C.textMuted, fontSize: '12px', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{product.sDescripcion}</p>
           )}
         </div>
-
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: `1px solid ${C.border}` }}>
           <span style={{ color: C.yellow, fontWeight: '800', fontSize: '18px' }}>${parseFloat(product.dPrecio).toFixed(2)}</span>
           <span style={{ color: C.textMuted, fontSize: '11px' }}>ID #{product.id}</span>
         </div>
-
-        {/* Botones acción */}
         <div style={{ display: 'flex', gap: '6px' }}>
           <button onClick={() => onEdit(product)}
             style={{ flex: 1, background: `${C.teal}15`, border: `1px solid ${C.teal}44`, borderRadius: '8px', padding: '8px', color: C.teal, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', fontFamily: FONT, fontWeight: '700', fontSize: '12px', transition: 'all 0.15s' }}
@@ -119,7 +64,6 @@ function AdminProductCard({ product, onEdit, onDelete, onToggleDisponible }) {
             onMouseLeave={e => { e.currentTarget.style.background = `${C.teal}15`; e.currentTarget.style.borderColor = `${C.teal}44`; }}>
             <Pencil size={12} /> Editar
           </button>
-
           <button onClick={() => onToggleDisponible(product)}
             style={{ flex: 1, background: product.bDisponible ? `${C.orange}15` : `${C.teal}15`, border: `1px solid ${product.bDisponible ? C.orange : C.teal}44`, borderRadius: '8px', padding: '8px', color: product.bDisponible ? C.orange : C.teal, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', fontFamily: FONT, fontWeight: '700', fontSize: '12px', transition: 'all 0.15s' }}
             onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
@@ -127,7 +71,6 @@ function AdminProductCard({ product, onEdit, onDelete, onToggleDisponible }) {
             {product.bDisponible ? <EyeOff size={12} /> : <Eye size={12} />}
             {product.bDisponible ? 'Ocultar' : 'Mostrar'}
           </button>
-
           <button onClick={handleDelete}
             style={{ background: confirmDelete ? `${C.pink}28` : `${C.pink}15`, border: `1px solid ${confirmDelete ? C.pink : C.pink + '44'}`, borderRadius: '8px', padding: '8px 12px', color: C.pink, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
             title={confirmDelete ? 'Confirmar' : 'Eliminar'}>
@@ -157,9 +100,9 @@ function ProductModal({ product, categories, onSave, onClose }) {
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
   const handleSave = async () => {
-    if (!form.sNombre.trim())                           return setError('El nombre es requerido.');
+    if (!form.sNombre.trim())                             return setError('El nombre es requerido.');
     if (!form.dPrecio || isNaN(parseFloat(form.dPrecio))) return setError('El precio debe ser un número válido.');
-    if (!form.iCategoriaId)                             return setError('La categoría es requerida.');
+    if (!form.iCategoriaId)                               return setError('La categoría es requerida.');
     setSaving(true); setError('');
     try {
       await onSave({ ...form, dPrecio: parseFloat(form.dPrecio) }, product?.id);
@@ -196,8 +139,6 @@ function ProductModal({ product, categories, onSave, onClose }) {
         </div>
 
         <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-          {/* Preview imagen */}
           {form.sImagenUrl && (
             <div style={{ width: '100%', height: '160px', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${C.border}` }}>
               <img src={form.sImagenUrl} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
@@ -248,7 +189,6 @@ function ProductModal({ product, categories, onSave, onClose }) {
             </div>
           </div>
 
-          {/* Toggles */}
           <div style={{ display: 'flex', gap: '10px' }}>
             {[
               { key: 'bDisponible', label: 'Disponible',      color: C.teal   },
@@ -288,12 +228,12 @@ function ProductModal({ product, categories, onSave, onClose }) {
    MENU ADMIN
 ═══════════════════════════════════════════════════════════════ */
 const MenuAdmin = () => {
-  const { logout } = useAuth();
-
   const [products,    setProducts]    = useState([]);
   const [categories,  setCategories]  = useState([]);
   const [loading,     setLoading]     = useState(true);
+  const [refreshing,  setRefreshing]  = useState(false);
   const [error,       setError]       = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [search,      setSearch]      = useState('');
   const [catId,       setCatId]       = useState('');
   const [soloDisp,    setSoloDisp]    = useState(false);
@@ -302,23 +242,31 @@ const MenuAdmin = () => {
   const [searchFocus, setSearchFocus] = useState(false);
   const [modal,       setModal]       = useState(null);
 
-  const load = async () => {
+  const load = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
+      else setRefreshing(true);
       const [prods, cats] = await Promise.all([
         productsService.getAll(),
         categoriesService.getAll(),
       ]);
-      setProducts(prods); // Admin ve TODOS (activos e inactivos)
+      setProducts(prods);
       setCategories(cats);
+      setError('');
     } catch {
       setError('No se pudo cargar el menú.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
 
   const filtered = useMemo(() => {
     let list = [...products];
@@ -334,21 +282,22 @@ const MenuAdmin = () => {
   const handleSave = async (data, id) => {
     if (id) await productsService.update(id, data);
     else    await productsService.create(data);
-    await load();
+    setSearchInput(''); setSearch('');
+    await load(true);
   };
 
   const handleDelete = async (id) => {
-    try { await productsService.delete(id); await load(); }
+    try { await productsService.delete(id); await load(true); }
     catch (e) { alert(e.response?.data?.message || 'Error al eliminar.'); }
   };
 
   const handleToggleDisponible = async (product) => {
-    try { await productsService.update(product.id, { bDisponible: !product.bDisponible }); await load(); }
+    try { await productsService.update(product.id, { bDisponible: !product.bDisponible }); await load(true); }
     catch { alert('Error al actualizar disponibilidad.'); }
   };
 
-  const clearFilters = () => { setSearch(''); setCatId(''); setSoloDisp(false); setSoloInact(false); setOrden(''); };
-  const hasFilters = search || catId || soloDisp || soloInact || orden;
+  const clearFilters = () => { setSearchInput(''); setSearch(''); setCatId(''); setSoloDisp(false); setSoloInact(false); setOrden(''); };
+  const hasFilters = searchInput || catId || soloDisp || soloInact || orden;
 
   const activos   = products.filter(p => p.bActivo).length;
   const inactivos = products.filter(p => !p.bActivo).length;
@@ -356,7 +305,9 @@ const MenuAdmin = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT, color: C.textPrimary }}>
-      <AdminHeader onLogout={logout} />
+
+    
+      <Header />
 
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '28px 24px 80px' }}>
 
@@ -367,19 +318,29 @@ const MenuAdmin = () => {
               <UtensilsCrossed size={16} color={C.pink} />
               <span style={{ color: C.textMuted, fontSize: '12px', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Gestión del Menú</span>
             </div>
-            <h1 style={{ margin: '0 0 4px', fontSize: 'clamp(20px,4vw,28px)', fontWeight: '800', color: C.textPrimary }}>Productos</h1>
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-              <span style={{ color: C.teal,     fontSize: '13px', fontWeight: '700' }}>{activos} activos</span>
-              <span style={{ color: C.textMuted, fontSize: '13px' }}>{inactivos} inactivos</span>
-              <span style={{ color: C.orange,   fontSize: '13px' }}>{noDisp} no disponibles</span>
+            <h1 style={{ margin: '0 0 8px', fontSize: 'clamp(20px,4vw,28px)', fontWeight: '800', color: C.textPrimary }}>Productos</h1>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: C.teal,     fontSize: '13px', fontWeight: '700' }}>{activos} Activos</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: C.textMuted, fontSize: '13px', fontWeight: '700' }}>{inactivos} Inactivos</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: C.orange,   fontSize: '13px', fontWeight: '700' }}>{noDisp} No disponibles</span>
             </div>
           </div>
-          <button onClick={() => setModal('create')}
-            style={{ background: C.pink, color: '#fff', border: 'none', borderRadius: '12px', padding: '12px 24px', fontFamily: FONT, fontWeight: '800', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: glow(C.pink, '55'), transition: 'transform 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
-            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-            <Plus size={16} /> Nuevo Producto
-          </button>
+
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button onClick={() => load(true)} disabled={refreshing}
+              style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '10px', color: C.textSecondary, cursor: refreshing ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}
+              title="Actualizar lista"
+              onMouseEnter={e => { e.currentTarget.style.borderColor = C.pink; e.currentTarget.style.color = C.pink; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSecondary; }}>
+              <RefreshCw size={15} style={{ animation: refreshing ? 'spin 0.8s linear infinite' : 'none' }} />
+            </button>
+            <button onClick={() => setModal('create')}
+              style={{ background: C.pink, color: '#fff', border: 'none', borderRadius: '12px', padding: '12px 24px', fontFamily: FONT, fontWeight: '800', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: glow(C.pink, '55'), transition: 'transform 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+              <Plus size={16} /> Nuevo Producto
+            </button>
+          </div>
         </div>
 
         {/* Filtros */}
@@ -387,12 +348,20 @@ const MenuAdmin = () => {
           <SlidersHorizontal size={15} color={C.textMuted} style={{ flexShrink: 0 }} />
 
           <div style={{ position: 'relative', flex: '1 1 200px', display: 'flex', alignItems: 'center' }}>
-            <Search size={14} color={searchFocus ? C.pink : C.textMuted} style={{ position: 'absolute', left: '10px', pointerEvents: 'none' }} />
-            <input value={search} onChange={e => setSearch(e.target.value)}
+            <Search size={14} color={searchFocus ? C.pink : C.textMuted} style={{ position: 'absolute', left: '10px', pointerEvents: 'none', transition: 'color 0.18s' }} />
+            <input value={searchInput} onChange={e => setSearchInput(e.target.value)}
               onFocus={() => setSearchFocus(true)} onBlur={() => setSearchFocus(false)}
               placeholder="Buscar producto..."
               style={{ width: '100%', boxSizing: 'border-box', background: C.bg, border: `1.5px solid ${searchFocus ? C.pink : C.border}`, borderRadius: '9px', padding: '8px 32px 8px 30px', color: C.textPrimary, fontFamily: FONT, fontWeight: '600', fontSize: '13px', outline: 'none', transition: 'border-color 0.18s' }} />
-            {search && <button onClick={() => setSearch('')} style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted }}><X size={13} /></button>}
+            {searchInput && searchInput !== search && (
+              <div style={{ position: 'absolute', right: '30px', width: '6px', height: '6px', borderRadius: '50%', background: C.pink, animation: 'pulse 0.8s ease infinite' }} />
+            )}
+            {searchInput && (
+              <button onClick={() => { setSearchInput(''); setSearch(''); }}
+                style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, display: 'flex' }}>
+                <X size={13} />
+              </button>
+            )}
           </div>
 
           <select value={catId} onChange={e => setCatId(e.target.value)}
@@ -410,7 +379,6 @@ const MenuAdmin = () => {
             ))}
           </div>
 
-          {/* Filtros extra para admin */}
           <button onClick={() => setSoloDisp(s => !s)}
             style={{ background: soloDisp ? `${C.teal}18` : 'transparent', border: `1.5px solid ${soloDisp ? C.teal : C.border}`, borderRadius: '9px', padding: '7px 12px', color: soloDisp ? C.teal : C.textMuted, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', transition: 'all 0.18s', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <Eye size={12} /> Solo disponibles
@@ -428,6 +396,12 @@ const MenuAdmin = () => {
               onMouseLeave={e => e.currentTarget.style.background = `${C.pink}12`}>
               <X size={12} /> Limpiar
             </button>
+          )}
+
+          {(search || catId || soloDisp || soloInact) && (
+            <span style={{ color: C.textMuted, fontSize: '12px', marginLeft: 'auto', flexShrink: 0 }}>
+              {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
+            </span>
           )}
         </div>
 
@@ -447,9 +421,11 @@ const MenuAdmin = () => {
               <UtensilsCrossed size={28} color={C.pink} />
             </div>
             <h3 style={{ color: C.textPrimary, margin: '0 0 8px', fontWeight: '800' }}>Sin resultados</h3>
-            <button onClick={clearFilters} style={{ background: C.pink, color: '#fff', border: 'none', borderRadius: '9px', padding: '10px 22px', fontFamily: FONT, fontWeight: '700', fontSize: '13px', cursor: 'pointer', boxShadow: glow(C.pink) }}>
-              Ver todos
-            </button>
+            {hasFilters && (
+              <button onClick={clearFilters} style={{ background: C.pink, color: '#fff', border: 'none', borderRadius: '9px', padding: '10px 22px', fontFamily: FONT, fontWeight: '700', fontSize: '13px', cursor: 'pointer', boxShadow: glow(C.pink) }}>
+                Ver todos
+              </button>
+            )}
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
@@ -471,7 +447,10 @@ const MenuAdmin = () => {
           onClose={() => setModal(null)} />
       )}
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin  { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+      `}</style>
     </div>
   );
 };
