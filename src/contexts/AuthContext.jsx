@@ -24,8 +24,8 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const saved    = authService.getCurrentUser();
-    const savedAt  = authService.getLoginAt();
+    const saved   = authService.getCurrentUser();
+    const savedAt = authService.getLoginAt();
     if (saved)   setUser(saved);
     if (savedAt) setLoginAt(savedAt);
     setLoading(false);
@@ -34,31 +34,35 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const data = await authService.login(email, password);
     setUser(data.user);
-    const at = authService.getLoginAt();
-    setLoginAt(at);
-    const destino = HOME_BY_ROL[data.user.rol] || '/dashboard';
-    navigate(destino);
+    setLoginAt(authService.getLoginAt());
+    navigate(HOME_BY_ROL[data.user.rol] || '/dashboard');
     return data;
   };
 
-  const logout = () => {
-    authService.logout();
+  const logout = async () => {
+    await authService.logout(); // llama al backend → libera la mesa
     setUser(null);
     setLoginAt(null);
     navigate('/');
   };
 
+  // Helpers para leer la mesa desde el user guardado en estado
+  const getMesaId    = () => user?.iMesaId || null;
+  const mesaNombre   = user?.mesa?.sNombre || (user?.iMesaId ? `Mesa ${user.iMesaId}` : null);
+
   const value = {
     user,
-    loginAt,  
+    loginAt,
     login,
     logout,
     loading,
+    getMesaId,
+    mesaNombre,
+    iMesaId:   user?.iMesaId || null,
     isAdmin:   user?.rol === 'admin',
     isMesero:  user?.rol === 'mesero',
     isCaja:    user?.rol === 'caja',
     isCliente: user?.rol === 'cliente',
-    iMesaId:   user?.iMesaId || null,
   };
 
   return (

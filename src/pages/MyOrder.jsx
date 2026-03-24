@@ -48,9 +48,10 @@ function NavBtn({ label, active, color, onClick, children }) {
 }
 
 /* ─── CLIENT HEADER ──────────────────────────────────────────── */
-function ClientHeader({ user, totalItems, onLogout }) {
+function ClientHeader({ totalItems, onLogout }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { mesaNombre, iMesaId } = useAuth();
 
   return (
     <header style={{
@@ -69,10 +70,22 @@ function ClientHeader({ user, totalItems, onLogout }) {
           <span style={{ color: C.cream, fontWeight: '800', fontSize: '16px' }}>iTaquito</span>
         </div>
 
-        {/* Badge mesa */}
-        {(user?.mesa || user?.iMesaId) && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: `${C.teal}12`, border: `1px solid ${C.teal}33`, borderRadius: '20px', padding: '4px 10px', color: C.teal, fontSize: '12px', fontWeight: '700' }}>
-            <MapPin size={11} /> {user.mesa?.sNombre || `Mesa ${user.iMesaId}`}
+        {/* Badge mesa - AHORA USA EL CONTEXTO DIRECTO */}
+        {(mesaNombre || iMesaId) && (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '5px', 
+            background: `${C.teal}12`, 
+            border: `1px solid ${C.teal}33`, 
+            borderRadius: '20px', 
+            padding: '4px 10px', 
+            color: C.teal, 
+            fontSize: '12px', 
+            fontWeight: '700' 
+          }}>
+            <MapPin size={11} /> 
+            {mesaNombre || `Mesa ${iMesaId}`}
           </div>
         )}
 
@@ -82,7 +95,7 @@ function ClientHeader({ user, totalItems, onLogout }) {
           <UtensilsCrossed size={14} />
         </NavBtn>
 
-        <NavBtn label="Mi Pedido"   active={pathname === '/my-orders'}   color={C.pink}   onClick={() => navigate('/my-orders')}>
+        <NavBtn label="Mi Pedido"   active={pathname === '/my-order'}   color={C.pink}   onClick={() => navigate('/my-order')}>
           <ShoppingBag size={14} />
           {totalItems > 0 && (
             <span style={{ background: C.pink, color: '#fff', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -91,7 +104,9 @@ function ClientHeader({ user, totalItems, onLogout }) {
           )}
         </NavBtn>
 
-       
+        <NavBtn label="Mis Pedidos" active={pathname === '/my-orders'}  color={C.purple} onClick={() => navigate('/my-orders')}>
+          <ClipboardList size={14} />
+        </NavBtn>
 
         <button onClick={onLogout}
           style={{ background: `${C.pink}12`, border: `1px solid ${C.pink}33`, borderRadius: '8px', padding: '6px 12px', color: C.pink, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', transition: 'all 0.18s' }}
@@ -198,16 +213,25 @@ function OrderSuccess({ onGoMenu, onViewOrders }) {
 ═══════════════════════════════════════════════════════════════ */
 const MyOrder = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { logout, getMesaId, mesaNombre } = useAuth();
   const { items, addItem, decrementItem, removeItem, clearCart, totalItems, totalPrecio } = useCart();
   const [ordering, setOrdering] = useState(false);
   const [ordered,  setOrdered]  = useState(false);
   const [error,    setError]    = useState('');
 
-  const iMesaId = user?.iMesaId || localStorage.getItem('iMesaId');
+  // AHORA USA getMesaId() del contexto
+  const iMesaId = getMesaId();
+
+  // Debug: puedes ver qué mesa se está usando
+  console.log('MyOrder - Mesa actual:', { iMesaId, mesaNombre });
 
   const handleOrder = async () => {
     if (items.length === 0) return;
+    if (!iMesaId) {
+      setError('No se ha identificado la mesa. Por favor, cierra sesión y vuelve a iniciar.');
+      return;
+    }
+    
     setOrdering(true);
     setError('');
     try {
@@ -233,7 +257,7 @@ const MyOrder = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT, color: C.textPrimary }}>
-      <ClientHeader user={user} totalItems={totalItems} onLogout={logout} />
+      <ClientHeader totalItems={totalItems} onLogout={logout} />
 
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '32px 24px 120px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px' }}>

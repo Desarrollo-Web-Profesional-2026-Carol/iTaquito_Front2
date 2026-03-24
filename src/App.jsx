@@ -10,28 +10,16 @@ import Dashboard from './pages/Dashboard';
 import Cocineros from './pages/Cocineros';
 import MyOrder from './pages/MyOrder';
 import MyOrders from './pages/MyOrders';
-import Menu from './pages/Menu';
+import MenuCliente from './pages/MenuCliente';
+import MenuAdmin from './pages/MenuAdmin';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#ECF0F1',
-      }}>
-        <div style={{
-          width: '48px',
-          height: '48px',
-          border: '4px solid #E83E8C',
-          borderTopColor: 'transparent',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }} />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ECF0F1' }}>
+        <div style={{ width: '48px', height: '48px', border: '4px solid #E83E8C', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -40,35 +28,31 @@ const PrivateRoute = ({ children }) => {
   return user ? children : <Navigate to="/login" />;
 };
 
+// Redirige /menu al componente correcto según rol
+const MenuRouter = () => {
+  const { isAdmin } = useAuth();
+  return isAdmin ? <MenuAdmin /> : <MenuCliente />;
+};
+
 function AppContent() {
   return (
     <Layout>
       <Routes>
         {/* Públicas */}
-        <Route path="/login"    element={<Login />} />
-        <Route path="/"         element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/"      element={<Home />} />
 
-        {/* Cliente — accesible sin login */}
-        <Route path="/my-order" element={<MyOrder />} />
-<Route path="/my-orders" element={<MyOrders />} />
+        {/* Cliente */}
+        <Route path="/menu"      element={<MenuRouter />} />
+        <Route path="/my-order"  element={<MyOrder />} />
+        <Route path="/my-orders" element={<MyOrders />} />
 
-        {/* Rutas protegidas — staff */}
-        <Route
-          path="/dashboard"
-          element={<PrivateRoute><Dashboard /></PrivateRoute>}
-        />
-        <Route
-          path="/tables"
-          element={<PrivateRoute><Tables /></PrivateRoute>}
-        />
-        <Route
-          path="/cocineros"
-          element={<PrivateRoute><Cocineros /></PrivateRoute>}
-        />
-<Route
- path="/menu"
-  element={<Menu />} />
-        {/* <Route path="*" element={<Navigate to="/" />} /> */}
+        {/* Staff — protegidas */}
+        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/tables"    element={<PrivateRoute><Tables /></PrivateRoute>} />
+        <Route path="/cocineros" element={<PrivateRoute><Cocineros /></PrivateRoute>} />
+
+        {/* {<Route path="*" element={<Navigate to="/" />} />} */}
       </Routes>
     </Layout>
   );

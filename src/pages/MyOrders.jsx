@@ -32,9 +32,10 @@ function NavBtn({ label, active, color, onClick, children }) {
 }
 
 /* ─── CLIENT HEADER ──────────────────────────────────────────── */
-function ClientHeader({ user, totalItems, onLogout }) {
+function ClientHeader({ totalItems, onLogout }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { mesaNombre, iMesaId } = useAuth();
 
   return (
     <header style={{ background: C.bgAccent, borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 200, boxShadow: '0 2px 16px rgba(0,0,0,0.4)', fontFamily: FONT }}>
@@ -48,9 +49,22 @@ function ClientHeader({ user, totalItems, onLogout }) {
           <span style={{ color: C.cream, fontWeight: '800', fontSize: '16px' }}>iTaquito</span>
         </div>
 
-        {(user?.mesa || user?.iMesaId) && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: `${C.teal}12`, border: `1px solid ${C.teal}33`, borderRadius: '20px', padding: '4px 10px', color: C.teal, fontSize: '12px', fontWeight: '700' }}>
-            <MapPin size={11} /> {user.mesa?.sNombre || `Mesa ${user.iMesaId}`}
+        {/* Badge mesa - AHORA USA EL CONTEXTO DIRECTO */}
+        {(mesaNombre || iMesaId) && (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '5px', 
+            background: `${C.teal}12`, 
+            border: `1px solid ${C.teal}33`, 
+            borderRadius: '20px', 
+            padding: '4px 10px', 
+            color: C.teal, 
+            fontSize: '12px', 
+            fontWeight: '700' 
+          }}>
+            <MapPin size={11} /> 
+            {mesaNombre || `Mesa ${iMesaId}`}
           </div>
         )}
 
@@ -60,7 +74,14 @@ function ClientHeader({ user, totalItems, onLogout }) {
           <UtensilsCrossed size={14} />
         </NavBtn>
 
-     
+        <NavBtn label="Mi Pedido"   active={pathname === '/my-order'}   color={C.pink}   onClick={() => navigate('/my-order')}>
+          <ShoppingBag size={14} />
+          {totalItems > 0 && (
+            <span style={{ background: C.pink, color: '#fff', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {totalItems}
+            </span>
+          )}
+        </NavBtn>
 
         <NavBtn label="Mis Pedidos" active={pathname === '/my-orders'}  color={C.purple} onClick={() => navigate('/my-orders')}>
           <ClipboardList size={14} />
@@ -138,16 +159,27 @@ function OrderCard({ order }) {
 ═══════════════════════════════════════════════════════════════ */
 const MyOrders = () => {
   const navigate = useNavigate();
-  const { user, loginAt, logout } = useAuth();
+  const { loginAt, logout, getMesaId, mesaNombre } = useAuth();
   const { totalItems } = useCart();
   const [orders,     setOrders]     = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error,      setError]      = useState('');
 
-  const iMesaId = user?.iMesaId;
+  // AHORA USA getMesaId() del contexto
+  const iMesaId = getMesaId();
+
+  // Debug: puedes ver qué mesa se está usando
+  console.log('MyOrders - Mesa actual:', { iMesaId, mesaNombre });
 
   const loadOrders = async () => {
+    if (!iMesaId) {
+      setError('No se ha identificado la mesa. Por favor, cierra sesión y vuelve a iniciar.');
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+    
     try {
       const data = await ordersService.getAll({ iMesaId });
       const desde = loginAt ? new Date(loginAt) : null;
@@ -155,6 +187,7 @@ const MyOrders = () => {
         ? (data.data || []).filter(o => new Date(o.createdAt) >= desde)
         : (data.data || []);
       setOrders(filtrados);
+      setError('');
     } catch (e) {
       setError('No se pudieron cargar los pedidos.');
     } finally {
@@ -163,10 +196,11 @@ const MyOrders = () => {
     }
   };
 
-  useEffect(() => { loadOrders(); }, []);
+  useEffect(() => { loadOrders(); }, [iMesaId]); // Agregar iMesaId como dependencia
 
   // Auto-refresh cada 30 segundos
   useEffect(() => {
+    if (!iMesaId) return;
     const interval = setInterval(loadOrders, 30000);
     return () => clearInterval(interval);
   }, [loginAt, iMesaId]);
@@ -178,7 +212,7 @@ const MyOrders = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT, color: C.textPrimary }}>
-      <ClientHeader user={user} totalItems={totalItems} onLogout={logout} />
+      <ClientHeader totalItems={totalItems} onLogout={logout} />
 
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '32px 24px 60px' }}>
 
