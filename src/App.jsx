@@ -91,6 +91,55 @@ function AppContent() {
           }
         />
         
+        <Route
+          path="/menu"
+          element={
+            <PrivateRoute>
+              <MenuRouter />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/cocineros"
+          element={
+            <PrivateRoute>
+              <Cocineros />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/my-order"
+          element={
+            <PrivateRoute>
+              <MyOrder />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/my-orders"
+          element={
+            <PrivateRoute>
+              <MyOrders />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <PrivateRoute>
+              <MyOrders />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin-users"
+          element={
+            <AdminRoute>
+              <AdminUsers />
+            </AdminRoute>
+          }
+        />
+        
         {/* Redirección por defecto (opcional, ya tenemos Home en "/") */}
         {/* <Route path="*" element={<Navigate to="/" />} /> */}
       </Routes>
