@@ -1,31 +1,58 @@
-import api from './api';
+import axios from 'axios';
+
+const API = import.meta.env.VITE_API_URL || 'https://itaquitobackend-production-b582.up.railway.app/api';
+
+const api = axios.create({ baseURL: API });
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 export const authService = {
-  async login(email, password) {
-    const response = await api.post('/auth/login', { email, password });
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+
+  login: async (email, password) => {
+    const { data } = await api.post('/auth/login', { email, password });
+    if (data.token) {
+      localStorage.setItem('token',   data.token);
+      localStorage.setItem('user',    JSON.stringify(data.user));
+      localStorage.setItem('loginAt', new Date().toISOString());
     }
-    return response.data;
+    return data;
   },
 
-  logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  logout: async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Notifica al backend ANTES de borrar el token
+        await api.post('/auth/logout');
+      }
+    } catch (e) {
+      console.warn('Error al notificar logout al backend:', e.message);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('loginAt');
+    }
   },
 
-  getCurrentUser() {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+  register: async (payload) => {
+    const { data } = await api.post('/auth/register', payload);
+    return data;
   },
 
-  getToken() {
-    return localStorage.getItem('token');
+  getCurrentUser: () => {
+    try {
+      const raw = localStorage.getItem('user');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
   },
 
-  isAdmin() {
-    const user = this.getCurrentUser();
-    return user?.rol === 'admin';
-  }
+  getLoginAt: () => localStorage.getItem('loginAt') || null,
+
+  getToken: () => localStorage.getItem('token') || null,
 };

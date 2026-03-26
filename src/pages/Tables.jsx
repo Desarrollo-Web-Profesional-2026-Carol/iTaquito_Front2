@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { tablesService } from '../services/tables';
-import TableCard from '../components/Tables/TableCard';
-import TableFilters from '../components/Tables/TableFilters';
-import TableModal from '../components/Tables/TableModal';
+import TableCard from '../components/interfaces/Administrador/Tables/TableCard';
+import TableFilters from '../components/interfaces/Administrador/Tables/TableFilters';
+import TableModal from '../components/interfaces/Administrador/Tables/TableModal';
+
 import { C, FONT, glow } from '../styles/designTokens';
 import {
   TableProperties, Plus, RefreshCw,
