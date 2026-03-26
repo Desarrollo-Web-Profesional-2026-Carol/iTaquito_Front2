@@ -41,7 +41,7 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
             Cancelar
           </Button>
           <Button variant="primary" onClick={onConfirm} fullWidth>
-            Sí, desactivar
+            Confirmar
           </Button>
         </div>
       </div>

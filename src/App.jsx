@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import Tables from './pages/Tables';
 import Dashboard from './pages/Dashboard';
+import Usuarios from './pages/Usuarios';
 import Cocineros from './pages/Cocineros';
 import MyOrder from './pages/MyOrder';
 import MyOrders from './pages/MyOrders';
@@ -59,21 +60,38 @@ function AppContent() {
       <Routes>
         {/* Públicas */}
         <Route path="/login" element={<Login />} />
-        <Route path="/"      element={<Home />} />
-
-        {/* Cliente */}
-        <Route path="/menu"      element={<MenuRouter />} />
-        <Route path="/my-order"  element={<MyOrder />} />
-        <Route path="/my-orders" element={<MyOrders />} />
-
-        {/* Staff — protegidas */}
-        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/tables"    element={<PrivateRoute><Tables /></PrivateRoute>} />
-        <Route path="/cocineros" element={<PrivateRoute><Cocineros /></PrivateRoute>} />
-
-        {/* Solo admin */}
-        <Route path="/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
-
+        
+        {/* Ruta Home - Pública */}
+        <Route path="/" element={<Home />} />
+        
+        {/* Rutas protegidas */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/tables"
+          element={
+            <PrivateRoute>
+              <Tables />
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/users"
+          element={
+            <PrivateRoute>
+              <Usuarios />
+            </PrivateRoute>
+          }
+        />
+        
+        {/* Redirección por defecto (opcional, ya tenemos Home en "/") */}
         {/* <Route path="*" element={<Navigate to="/" />} /> */}
       </Routes>
     </Layout>

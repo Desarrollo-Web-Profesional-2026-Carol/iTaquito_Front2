@@ -65,8 +65,10 @@ export const PICADO = [
 export const ROLE_COLORS = {
   admin:   C.pink,
   mesero:  C.orange,
+  cajero:  C.yellow,
   caja:    C.yellow,
   cliente: C.teal,
+  taquero: C.purple,
 };
 
 // ─── SOMBRAS NEÓN (helpers) ───────────────────────────────────────
