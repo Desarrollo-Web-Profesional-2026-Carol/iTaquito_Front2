@@ -5,27 +5,17 @@ import Footer from './Footer';
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const isLoginPage = location.pathname === '/login';
-  const isHomePage = location.pathname === '/';  
+  const path = location.pathname;
+
+  const hideChrome = ['/', '/login', '/menu', '/my-order', '/my-orders'].includes(path);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
-      {/* Header en todas las páginas excepto login */}
-      {!isLoginPage && isHomePage && <Header />}
-      
-      <main style={{ 
-        flex: 1,
-        backgroundColor: isHomePage ? 'transparent' : '#ECF0F1'
-      }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {!hideChrome && <Header />}
+      <main style={{ flex: 1 }}>
         {children}
       </main>
-      
-      {/* Footer en todas las páginas excepto login */}
-      {!isLoginPage && <Footer />}
+      {!hideChrome && <Footer />}
     </div>
   );
 };

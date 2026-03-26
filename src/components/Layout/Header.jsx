@@ -7,7 +7,7 @@ import {
   LayoutDashboard, UtensilsCrossed, Users, BarChart3,
   TableProperties, ClipboardList, Music,
   Home, ShoppingBag, Receipt, Banknote, History,
-  ChevronDown
+  ChevronDown, ChefHat
 } from 'lucide-react';
 
 /* ─── NAV CONFIG POR ROL ─────────────────────────────────────── */
@@ -18,6 +18,7 @@ const NAV_CONFIG = {
     links: [
       { label: "Dashboard",  path: "/dashboard", Icon: LayoutDashboard },
       { label: "Mesas",      path: "/tables",    Icon: TableProperties  },
+      { label: "Cocineros",  path: "/cocineros", Icon: ChefHat         },
       { label: "Menú",       path: "/menu",      Icon: UtensilsCrossed  },
       { label: "Usuarios",   path: "/users",     Icon: Users            },
       { label: "Reportes",   path: "/reports",   Icon: BarChart3        },
@@ -29,7 +30,7 @@ const NAV_CONFIG = {
     links: [
       { label: "Inicio",     path: "/home",      Icon: Home             },
       { label: "Menú",       path: "/menu",      Icon: UtensilsCrossed  },
-      { label: "Mi Pedido",  path: "/my-order",  Icon: ShoppingBag      },
+      { label: "Mi Pedido",  path: "/my-orders",  Icon: ShoppingBag      },
       { label: "Canciones",  path: "/songs",     Icon: Music            },
     ],
   },

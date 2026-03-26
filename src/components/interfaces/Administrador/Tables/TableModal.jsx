@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { C, FONT, glow } from '../../styles/designTokens';
+import { C, FONT, glow } from '../../../../styles/designTokens';
 import { X, TableProperties, Save } from 'lucide-react';
-import Button from '../UI/Button';
+import Button from '../../../UI/Button';
 
 /* ─── FIELD LABEL ────────────────────────────────────────────── */
 function FieldLabel({ children }) {

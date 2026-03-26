@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { C, FONT, ROLE_COLORS, glow } from '../styles/designTokens';
 import { Mail, Lock, LogIn, AlertCircle, Eye, EyeOff, Utensils } from 'lucide-react';
@@ -111,7 +110,6 @@ const Login = () => {
   const [error,    setError]    = useState('');
   const [loading,  setLoading]  = useState(false);
 
-  const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -120,7 +118,7 @@ const Login = () => {
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/dashboard');
+      // La redirección la maneja AuthContext según el rol
     } catch (err) {
       setError(err.response?.data?.message || 'Correo o contraseña incorrectos');
     } finally {
@@ -339,7 +337,7 @@ const Login = () => {
 
       {/* Footer */}
       <p style={{ marginTop: "24px", color: C.textMuted, fontSize: "12px", textAlign: "center" }}>
-        © {new Date().getFullYear()} 
+        © {new Date().getFullYear()} iTaquito · Hecho con ♥ en México
       </p>
     </div>
   );

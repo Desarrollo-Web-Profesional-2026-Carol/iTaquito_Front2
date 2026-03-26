@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { C, FONT, glow } from '../../styles/designTokens';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { C, FONT, glow } from '../../../../styles/designTokens';
 import {
   Users, Pencil, PowerOff, RotateCcw,
   CheckCircle, DoorOpen, Star,
