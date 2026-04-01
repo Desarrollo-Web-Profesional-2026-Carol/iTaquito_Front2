@@ -9,6 +9,8 @@ import {
   ShoppingBag, DollarSign, Star, ArrowRight,
   Activity, RefreshCw
 } from 'lucide-react';
+import { tablesService } from '../services/tables';
+import { ordersService } from '../services/orders';
 
 /* ─── STAT CARD ──────────────────────────────────────────────── */
 function StatCard({ label, value, sub, Icon, color, trend, trendValue }) {
@@ -31,7 +33,6 @@ function StatCard({ label, value, sub, Icon, color, trend, trendValue }) {
         overflow: "hidden",
       }}
     >
-      {/* Franja top */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: color, boxShadow: `0 0 8px ${color}` }} />
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
@@ -114,73 +115,255 @@ function QuickAction({ label, Icon, color, onClick }) {
   );
 }
 
-/* ─── TABLE STATUS BADGE ─────────────────────────────────────── */
-function StatusBadge({ status }) {
-  const map = {
-    disponible: { color: C.teal,   label: "Disponible" },
-    ocupada:    { color: C.orange, label: "Ocupada"    },
-    reservada:  { color: C.yellow, label: "Reservada"  },
-    inactiva:   { color: C.textMuted, label: "Inactiva" },
-  };
-  const s = map[status] || map.inactiva;
-  return (
-    <span style={{
-      background: `${s.color}18`, border: `1px solid ${s.color}44`,
-      color: s.color, borderRadius: "20px", padding: "2px 9px",
-      fontSize: "11px", fontWeight: "700",
-    }}>{s.label}</span>
-  );
-}
-
 /* ─── DASHBOARD ──────────────────────────────────────────────── */
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [now, setNow] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Estados para datos reales
+  const [stats, setStats] = useState({
+    totalMesas: 0,
+    mesasOcupadas: 0,
+    mesasDisponibles: 0,
+    mesasReservadas: 0,
+    pedidosPendientes: 0,
+    pedidosPreparacion: 0,
+    pedidosActivos: 0,
+    ventasDia: 0,
+    ventasSemana: 0,
+    calificacion: 4.8
+  });
+  const [actividad, setActividad] = useState([]);
+  const [mesasPreview, setMesasPreview] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Redirigir si no es admin
+  useEffect(() => {
+    if (!isAdmin && user) {
+      // Redirigir según el rol del usuario
+      const rolRedirects = {
+        mesero: '/tables',
+        caja: '/orders',
+        cliente: '/menu'
+      };
+      navigate(rolRedirects[user?.rol] || '/');
+    }
+  }, [isAdmin, user, navigate]);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(t);
   }, []);
 
+  // Función para formatear tiempo relativo
+  const formatTimeAgo = (dateString) => {
+    if (!dateString) return 'Reciente';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffMins < 1) return 'Ahora';
+    if (diffMins < 60) return `Hace ${diffMins} min`;
+    if (diffHours < 24) return `Hace ${diffHours} h`;
+    return `Hace ${diffDays} d`;
+  };
+
+  // Cargar datos del dashboard
+  const loadDashboardData = async () => {
+    setLoading(true);
+    try {
+      // 1. Cargar mesas
+      const mesasData = await tablesService.getAll();
+      const mesas = Array.isArray(mesasData) ? mesasData : (mesasData.data || []);
+      
+      // Crear mapa de mesas por ID para acceder rápidamente al nombre
+      const mesasMap = {};
+      mesas.forEach(mesa => {
+        mesasMap[mesa.id] = mesa;
+      });
+      
+      const totalMesas = mesas.length;
+      const mesasOcupadas = mesas.filter(m => m.sEstado === 'ocupada').length;
+      const mesasDisponibles = mesas.filter(m => m.sEstado === 'disponible').length;
+      const mesasReservadas = mesas.filter(m => m.sEstado === 'reservada').length;
+      
+      // 2. Cargar pedidos
+      const pedidosData = await ordersService.getAll();
+      const pedidos = Array.isArray(pedidosData) ? pedidosData : (pedidosData.data || []);
+      
+      const pedidosPendientes = pedidos.filter(p => p.sEstado === 'pendiente').length;
+      const pedidosPreparacion = pedidos.filter(p => p.sEstado === 'en_preparacion').length;
+      const pedidosActivos = pedidosPendientes + pedidosPreparacion;
+      
+      // 3. Calcular ventas del día (pedidos entregados hoy)
+      const hoy = new Date().toISOString().split('T')[0];
+      const pedidosHoy = pedidos.filter(p => {
+        if (!p.createdAt) return false;
+        const fechaPedido = new Date(p.createdAt).toISOString().split('T')[0];
+        return fechaPedido === hoy && p.sEstado === 'entregado';
+      });
+      
+      const ventasDia = pedidosHoy.reduce((total, p) => total + (parseFloat(p.dTotal) || 0), 0);
+      
+      // 4. Calcular ventas de la semana
+      const unaSemanaAtras = new Date();
+      unaSemanaAtras.setDate(unaSemanaAtras.getDate() - 7);
+      const pedidosSemana = pedidos.filter(p => {
+        if (!p.createdAt) return false;
+        const fechaPedido = new Date(p.createdAt);
+        return fechaPedido >= unaSemanaAtras && p.sEstado === 'entregado';
+      });
+      
+      const ventasSemana = pedidosSemana.reduce((total, p) => total + (parseFloat(p.dTotal) || 0), 0);
+      
+      // 5. Calcular calificación promedio (si tienes reviews, si no, placeholder)
+      const calificacion = 4.8;
+      
+      // 6. Preparar actividad reciente (últimos 6 eventos)
+      const eventos = [];
+      
+      // Agregar cambios de estado de pedidos recientes
+      const pedidosRecientes = [...pedidos]
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+        .slice(0, 8);
+      
+      pedidosRecientes.forEach(pedido => {
+        const estadoMap = {
+          'pendiente': { icon: Clock, color: C.yellow, label: 'creado' },
+          'en_preparacion': { icon: UtensilsCrossed, color: C.orange, label: 'en preparación' },
+          'listo': { icon: CheckCircle, color: C.teal, label: 'listo' },
+          'entregado': { icon: ShoppingBag, color: C.purple, label: 'entregado' },
+          'cancelado': { icon: XCircle, color: C.error, label: 'cancelado' }
+        };
+        const estadoInfo = estadoMap[pedido.sEstado] || estadoMap.pendiente;
+        
+        // Obtener el nombre de la mesa usando el mapa
+        const mesa = mesasMap[pedido.iMesaId];
+        const nombreMesa = mesa?.sNombre || `Mesa ${pedido.iMesaId}`;
+        
+        eventos.push({
+          icon: estadoInfo.icon,
+          color: estadoInfo.color,
+          title: `Pedido #${pedido.id} ${estadoInfo.label}`,
+          sub: `Lugar: ${nombreMesa} · Total $${parseFloat(pedido.dTotal || 0).toFixed(2)}`,
+          time: formatTimeAgo(pedido.updatedAt || pedido.createdAt)
+        });
+      });
+      
+      // Agregar cambios de estado de mesas recientes
+      const mesasRecientes = [...mesas]
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+        .slice(0, 4);
+      
+      mesasRecientes.forEach(mesa => {
+        const estadoMap = {
+          'disponible': { icon: CheckCircle, color: C.teal, label: 'disponible' },
+          'ocupada': { icon: Users, color: C.orange, label: 'ocupada' },
+          'reservada': { icon: Clock, color: C.yellow, label: 'reservada' },
+          'inactiva': { icon: XCircle, color: C.textMuted, label: 'inactiva' }
+        };
+        const estadoInfo = estadoMap[mesa.sEstado] || estadoMap.disponible;
+        
+        eventos.push({
+          icon: estadoInfo.icon,
+          color: estadoInfo.color,
+          title: `Mesa ${mesa.sNombre || mesa.id} ${estadoInfo.label}`,
+          sub: `Capacidad: ${mesa.iCapacidad} personas · ${mesa.sUbicacion || 'interior'}`,
+          time: formatTimeAgo(mesa.updatedAt)
+        });
+      });
+      
+      // Ordenar por tiempo y tomar los primeros 6
+      const actividadReciente = eventos
+        .sort((a, b) => {
+          const getMinutes = (timeStr) => {
+            if (timeStr.includes('Ahora')) return 0;
+            const match = timeStr.match(/\d+/);
+            if (match) {
+              if (timeStr.includes('min')) return parseInt(match[0]);
+              if (timeStr.includes('h')) return parseInt(match[0]) * 60;
+              if (timeStr.includes('d')) return parseInt(match[0]) * 1440;
+            }
+            return 9999;
+          };
+          return getMinutes(a.time) - getMinutes(b.time);
+        })
+        .slice(0, 6);
+      
+      // 7. Preparar preview de mesas (primeras 8 mesas)
+      const mesasPreviewData = mesas.slice(0, 8).map(m => ({
+        id: m.id,
+        num: m.sNombre || `Mesa ${m.id}`,
+        cap: m.iCapacidad || 4,
+        status: m.sEstado || 'disponible',
+        ubicacion: m.sUbicacion
+      }));
+      
+      setStats({
+        totalMesas,
+        mesasOcupadas,
+        mesasDisponibles,
+        mesasReservadas,
+        pedidosPendientes,
+        pedidosPreparacion,
+        pedidosActivos,
+        ventasDia,
+        ventasSemana,
+        calificacion
+      });
+      
+      setActividad(actividadReciente);
+      setMesasPreview(mesasPreviewData);
+      
+    } catch (error) {
+      console.error('Error cargando dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
   const handleRefresh = () => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
+    loadDashboardData().finally(() => {
+      setTimeout(() => setRefreshing(false), 1000);
+    });
   };
 
   const h = now.getHours();
   const greeting = h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches";
+  
+  // Calcular porcentaje de ocupación
+  const ocupacionPorcentaje = stats.totalMesas > 0 
+    ? Math.round((stats.mesasOcupadas / stats.totalMesas) * 100) 
+    : 0;
 
-  // Datos de ejemplo — reemplazar con llamadas reales a la API
+  // Datos de estadísticas con valores reales
   const STATS = [
-    { label: "Total Mesas",       value: "24",  sub: "En el establecimiento",    Icon: TableProperties,  color: C.pink,   trend: "up",   trendValue: "+2 esta semana" },
-    { label: "Mesas Ocupadas",    value: "14",  sub: "58% de ocupación",         Icon: Users,            color: C.orange, trend: "up",   trendValue: "+3 hoy"         },
-    { label: "Mesas Disponibles", value: "8",   sub: "Listas para recibir",      Icon: CheckCircle,      color: C.teal,   trend: null,   trendValue: null              },
-    { label: "Pedidos Activos",   value: "21",  sub: "En cocina ahora mismo",    Icon: ShoppingBag,      color: C.yellow, trend: "up",   trendValue: "+5 vs ayer"     },
-    { label: "Ventas del Día",    value: "$3,240", sub: "Hasta las " + now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }), Icon: DollarSign, color: C.purple, trend: "up", trendValue: "+12%" },
-    { label: "Calificación",      value: "4.8", sub: "Promedio del mes",         Icon: Star,             color: C.yellow, trend: "up",   trendValue: "+0.2"            },
+    { label: "Total Mesas",       value: stats.totalMesas,  sub: "En el establecimiento",    Icon: TableProperties,  color: C.pink },
+    { label: "Mesas Ocupadas",    value: stats.mesasOcupadas,  sub: `${ocupacionPorcentaje}% de ocupación`, Icon: Users, color: C.orange },
+    { label: "Mesas Disponibles", value: stats.mesasDisponibles,   sub: `${stats.mesasReservadas} reservadas`, Icon: CheckCircle, color: C.teal },
+    { label: "Pedidos Activos",   value: stats.pedidosActivos,  sub: `${stats.pedidosPendientes} pendientes · ${stats.pedidosPreparacion} en cocina`, Icon: ShoppingBag, color: C.yellow },
+    { label: "Ventas del Día",    value: `$${stats.ventasDia.toLocaleString()}`, sub: "Hoy", Icon: DollarSign, color: C.purple },
+    { label: "Calificación",      value: stats.calificacion.toFixed(1), sub: "Promedio del mes", Icon: Star, color: C.yellow },
   ];
 
-  const ACTIVITY = [
-    { icon: ShoppingBag, color: C.teal,   title: "Pedido #142 confirmado",         sub: "Mesa 7 · 3 tacos al pastor",      time: "Hace 2 min"  },
-    { icon: TableProperties, color: C.orange, title: "Mesa 12 ocupada",             sub: "4 personas · Mesero: Carlos",     time: "Hace 5 min"  },
-    { icon: DollarSign,  color: C.yellow, title: "Cobro procesado $340",           sub: "Mesa 3 · Tarjeta",                time: "Hace 8 min"  },
-    { icon: Star,        color: C.pink,   title: "Nueva reseña ★★★★★",            sub: "\"Excelentes tacos al pastor\"",  time: "Hace 14 min" },
-    { icon: CheckCircle, color: C.teal,   title: "Mesa 5 liberada",                sub: "Duración: 42 min",                time: "Hace 20 min" },
-    { icon: AlertCircle, color: C.orange, title: "Pedido #138 tardando >15 min",   sub: "Mesa 9 · Revisar cocina",         time: "Hace 22 min" },
-  ];
-
-  const MESA_PREVIEW = [
-    { num: 1,  cap: 4, status: "ocupada"    },
-    { num: 2,  cap: 2, status: "disponible" },
-    { num: 3,  cap: 6, status: "ocupada"    },
-    { num: 4,  cap: 4, status: "reservada"  },
-    { num: 5,  cap: 4, status: "disponible" },
-    { num: 6,  cap: 8, status: "ocupada"    },
-    { num: 7,  cap: 4, status: "ocupada"    },
-    { num: 8,  cap: 2, status: "inactiva"   },
-  ];
+  // Si no es admin y está cargando, mostrar loading
+  if (!isAdmin && user) {
+    return (
+      <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: C.textMuted }}>Redirigiendo...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: FONT, color: C.textPrimary }}>
@@ -203,6 +386,7 @@ const Dashboard = () => {
           </div>
           <button
             onClick={handleRefresh}
+            disabled={refreshing}
             style={{
               background: C.bgCard, border: `1px solid ${C.border}`,
               borderRadius: "10px", padding: "8px 16px",
@@ -210,12 +394,13 @@ const Dashboard = () => {
               fontSize: "13px", cursor: "pointer",
               display: "flex", alignItems: "center", gap: "6px",
               transition: "all 0.2s",
+              opacity: refreshing ? 0.6 : 1,
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = C.pink; e.currentTarget.style.color = C.pink; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSecondary; }}
           >
             <RefreshCw size={14} style={{ animation: refreshing ? "spin 0.8s linear" : "none" }} />
-            Actualizar
+            {refreshing ? "Actualizando..." : "Actualizar"}
           </button>
         </div>
 
@@ -252,7 +437,13 @@ const Dashboard = () => {
               <Activity size={15} color={C.textMuted} />
             </div>
             <div>
-              {ACTIVITY.map((a, i) => <ActivityItem key={i} {...a} />)}
+              {loading ? (
+                <div style={{ textAlign: "center", padding: "20px", color: C.textMuted }}>Cargando actividad...</div>
+              ) : actividad.length > 0 ? (
+                actividad.map((a, i) => <ActivityItem key={i} {...a} />)
+              ) : (
+                <div style={{ textAlign: "center", padding: "20px", color: C.textMuted }}>No hay actividad reciente</div>
+              )}
             </div>
           </div>
 
@@ -288,40 +479,51 @@ const Dashboard = () => {
 
             {/* Grid de mesas */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
-              {MESA_PREVIEW.map(({ num, cap, status }) => {
-                const colors = { disponible: C.teal, ocupada: C.orange, reservada: C.yellow, inactiva: C.textMuted };
-                const col = colors[status];
-                return (
-                  <div
-                    key={num}
-                    onClick={() => navigate('/tables')}
-                    style={{
-                      background: `${col}12`,
-                      border: `1.5px solid ${col}44`,
-                      borderRadius: "10px",
-                      padding: "10px 8px",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = col; e.currentTarget.style.background = `${col}20`; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = `${col}44`; e.currentTarget.style.background = `${col}12`; }}
-                  >
-                    <div style={{ color: col, fontWeight: "800", fontSize: "16px" }}>{num}</div>
-                    <div style={{ color: C.textMuted, fontSize: "9px", marginTop: "2px" }}>{cap} pers.</div>
-                  </div>
-                );
-              })}
+              {loading ? (
+                <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "20px", color: C.textMuted }}>Cargando mesas...</div>
+              ) : mesasPreview.length > 0 ? (
+                mesasPreview.map(({ id, num, cap, status }) => {
+                  const colors = { disponible: C.teal, ocupada: C.orange, reservada: C.yellow, inactiva: C.textMuted };
+                  const col = colors[status] || C.textMuted;
+                  return (
+                    <div
+                      key={id}
+                      onClick={() => navigate('/tables')}
+                      style={{
+                        background: `${col}12`,
+                        border: `1.5px solid ${col}44`,
+                        borderRadius: "10px",
+                        padding: "10px 8px",
+                        textAlign: "center",
+                        cursor: "pointer",
+                        transition: "all 0.15s",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = col; e.currentTarget.style.background = `${col}20`; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = `${col}44`; e.currentTarget.style.background = `${col}12`; }}
+                    >
+                      <div style={{ color: col, fontWeight: "800", fontSize: "16px" }}>{num}</div>
+                      <div style={{ color: C.textMuted, fontSize: "9px", marginTop: "2px" }}>{cap} pers.</div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "20px", color: C.textMuted }}>No hay mesas disponibles</div>
+              )}
             </div>
 
             {/* Resumen ocupación */}
             <div style={{ marginTop: "16px", background: C.bg, borderRadius: "10px", padding: "12px 14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                 <span style={{ color: C.textSecondary, fontSize: "12px", fontWeight: "600" }}>Ocupación actual</span>
-                <span style={{ color: C.orange, fontWeight: "800", fontSize: "13px" }}>58%</span>
+                <span style={{ color: C.orange, fontWeight: "800", fontSize: "13px" }}>{ocupacionPorcentaje}%</span>
               </div>
               <div style={{ height: "6px", background: C.border, borderRadius: "4px", overflow: "hidden" }}>
-                <div style={{ width: "58%", height: "100%", background: C.orange, borderRadius: "4px", boxShadow: glow(C.orange, "66") }} />
+                <div style={{ width: `${ocupacionPorcentaje}%`, height: "100%", background: C.orange, borderRadius: "4px", boxShadow: glow(C.orange, "66") }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
+                <span style={{ color: C.textMuted, fontSize: "10px" }}>Disponibles: {stats.mesasDisponibles}</span>
+                <span style={{ color: C.textMuted, fontSize: "10px" }}>Ocupadas: {stats.mesasOcupadas}</span>
+                <span style={{ color: C.textMuted, fontSize: "10px" }}>Reservadas: {stats.mesasReservadas}</span>
               </div>
             </div>
           </div>

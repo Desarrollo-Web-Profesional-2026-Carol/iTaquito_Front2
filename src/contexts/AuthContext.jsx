@@ -13,7 +13,7 @@ export const useAuth = () => {
 const HOME_BY_ROL = {
   admin:   '/dashboard',
   mesero:  '/tables',
-  caja:    '/orders',
+  cajero:    '/cajero',
   cliente: '/menu',
 };
 
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
     iMesaId:   user?.iMesaId || null,
     isAdmin:   user?.rol === 'admin',
     isMesero:  user?.rol === 'mesero',
-    isCaja:    user?.rol === 'caja',
+    isCajero:    user?.rol === 'cajero',
     isCliente: user?.rol === 'cliente',
   };
 

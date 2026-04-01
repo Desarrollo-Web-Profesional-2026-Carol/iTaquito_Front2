@@ -79,7 +79,7 @@ const UsuariosFilters = ({ filters, onFilterChange }) => {
         <option value="admin">Admin</option>
         <option value="mesero">Mesero</option>
         <option value="cajero">Cajero</option>
-        <option value="taquero">Taquero (Cocinero)</option>
+        <option value="taquero">Taquero </option>
         <option value="cliente">Cliente</option>
       </DarkSelect>
 
