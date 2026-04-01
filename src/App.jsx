@@ -1,27 +1,45 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { CartProvider } from './contexts/CartContext';
-import Layout from './components/Layout/Layout';
-import Login from './pages/Login';
-import Home from './pages/Home';
-import Tables from './pages/Tables';
-import Dashboard from './pages/Dashboard';
-import Usuarios from './pages/Usuarios';
-import Cocineros from './pages/Cocineros';
-import MyOrder from './pages/MyOrder';
-import MyOrders from './pages/MyOrders';
-import MenuCliente from './pages/MenuCliente';
-import MenuAdmin from './pages/MenuAdmin';
-import AdminUsers from './pages/AdminUsers';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { CartProvider } from "./contexts/CartContext";
+import Layout from "./components/Layout/Layout";
+import Login from "./pages/Login";
+import Home from "./pages/Home";
+import Tables from "./pages/Tables";
+import Dashboard from "./pages/Dashboard";
+import Usuarios from "./pages/Usuarios";
+import Cocineros from "./pages/Cocineros";
+import MyOrder from "./pages/MyOrder";
+import MyOrders from "./pages/MyOrders";
+import MenuCliente from "./pages/MenuCliente";
+import MenuAdmin from "./pages/MenuAdmin";
+import AdminUsers from "./pages/AdminUsers";
+import CajeroPanel from "./pages/CajeroPanel"; 
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ECF0F1' }}>
-        <div style={{ width: '48px', height: '48px', border: '4px solid #E83E8C', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#ECF0F1",
+        }}
+      >
+        <div
+          style={{
+            width: "48px",
+            height: "48px",
+            border: "4px solid #E83E8C",
+            borderTopColor: "transparent",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }}
+        />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -36,8 +54,25 @@ const AdminRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ECF0F1' }}>
-        <div style={{ width: '48px', height: '48px', border: '4px solid #E83E8C', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#ECF0F1",
+        }}
+      >
+        <div
+          style={{
+            width: "48px",
+            height: "48px",
+            border: "4px solid #E83E8C",
+            borderTopColor: "transparent",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }}
+        />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -45,6 +80,41 @@ const AdminRoute = ({ children }) => {
 
   if (!user) return <Navigate to="/login" />;
   if (!isAdmin) return <Navigate to="/" />;
+  return children;
+};
+
+// Solo cajero o admin
+const CajeroRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#ECF0F1",
+        }}
+      >
+        <div
+          style={{
+            width: "48px",
+            height: "48px",
+            border: "4px solid #E83E8C",
+            borderTopColor: "transparent",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" />;
+  if (user.rol !== 'cajero' && user.rol !== 'admin') return <Navigate to="/" />;
   return children;
 };
 
@@ -60,10 +130,10 @@ function AppContent() {
       <Routes>
         {/* Públicas */}
         <Route path="/login" element={<Login />} />
-        
+
         {/* Ruta Home - Pública */}
         <Route path="/" element={<Home />} />
-        
+
         {/* Rutas protegidas */}
         <Route
           path="/dashboard"
@@ -81,7 +151,7 @@ function AppContent() {
             </PrivateRoute>
           }
         />
-        
+
         <Route
           path="/users"
           element={
@@ -90,7 +160,7 @@ function AppContent() {
             </PrivateRoute>
           }
         />
-        
+
         <Route
           path="/menu"
           element={
@@ -100,7 +170,7 @@ function AppContent() {
           }
         />
         <Route
-          path="/cocineros"
+          path="/Cocineros"
           element={
             <PrivateRoute>
               <Cocineros />
@@ -139,7 +209,17 @@ function AppContent() {
             </AdminRoute>
           }
         />
-        
+
+        {/* Nueva ruta para el panel de cajero */}
+        <Route
+          path="/cajero"
+          element={
+            <CajeroRoute>
+              <CajeroPanel />
+            </CajeroRoute>
+          }
+        />
+
         {/* Redirección por defecto (opcional, ya tenemos Home en "/") */}
         {/* <Route path="*" element={<Navigate to="/" />} /> */}
       </Routes>

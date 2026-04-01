@@ -1,13 +1,15 @@
 import api from "./api";
 
-export const cocinerosService = {
-  getAll: (filters) => api.get('/cocineros', { params: filters }).then(res => res.data),
-  create: (data)    => api.post('/cocineros', data).then(res => res.data),
-  update: (id, data)=> api.put(`/cocineros/${id}`, data).then(res => res.data),
-  
+export const CocinerosService = {
+  getAll: (filters) =>
+    api.get("/Cocineros", { params: filters }).then((res) => res.data),
+  create: (data) => api.post("/Cocineros", data).then((res) => res.data),
+  update: (id, data) =>
+    api.put(`/Cocineros/${id}`, data).then((res) => res.data),
+
   // Usamos delete para el borrado lógico (desactivar)
-  delete: (id)      => api.delete(`/cocineros/${id}`).then(res => res.data),
-  
+  delete: (id) => api.delete(`/Cocineros/${id}`).then((res) => res.data),
+
   // Usamos patch para reactivar
-  reactivate: (id)  => api.patch(`/cocineros/${id}`).then(res => res.data),
+  reactivate: (id) => api.patch(`/Cocineros/${id}`).then((res) => res.data),
 };

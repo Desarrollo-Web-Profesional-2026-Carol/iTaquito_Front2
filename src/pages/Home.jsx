@@ -1,131 +1,37 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Utensils, Star, Clock, TrendingUp,
-  ChevronRight, Flame, Award,
-  Zap, ArrowRight, ThumbsUp, MessageCircle, LogIn
-} from "lucide-react";
+import { Clock, Utensils, LogIn } from "lucide-react";
 import { C, FONT } from "../styles/designTokens";
 
-/* ─── DATA ───────────────────────────────────────────────────── */
-const BESTSELLERS = [
-  { id: 1, name: "Al Pastor", price: 25, desc: "Cerdo marinado, piña asada, cebolla y cilantro", tag: "#1 Más pedido",   tagIcon: TrendingUp, color: C.pink   },
-  { id: 2, name: "Bistec",    price: 28, desc: "Carne asada, guacamole y pico de gallo",          tag: "Favorito del día", tagIcon: Flame,      color: C.orange },
-  { id: 3, name: "Suadero",   price: 26, desc: "Suadero dorado, cebolla y salsa verde",            tag: "Clásico",         tagIcon: Award,      color: C.teal   },
-];
-
-const REVIEWS = [
-  { name: "María G.",  stars: 5, text: "Los tacos de suadero están increíbles. Siempre vuelvo.",       time: "Hace 2 días", color: C.pink   },
-  { name: "Carlos R.", stars: 5, text: "Pedí desde la tablet y llegó en 7 min. Sistema rapidísimo.",   time: "Ayer",        color: C.orange },
-  { name: "Ana P.",    stars: 4, text: "Me encantó pedir desde la mesa. Experiencia única.",            time: "Hoy",         color: C.teal   },
-];
-
+/* ─── PAPEL PICADO ───────────────────────────────────────────── */
 const PICADO = [C.pink, C.orange, C.yellow, C.teal, C.purple, C.pinkDim, C.orangeDim, C.tealDim];
 
-/* ─── PAPEL PICADO (SVG) ─────────────────────────────────────── */
 function PapelPicado({ flip = false }) {
-  const count = 16, w = 100 / count;
+  const count = 20, w = 100 / count;
   return (
-    <div style={{ width: "100%", lineHeight: 0, flexShrink: 0, transform: flip ? "scaleY(-1)" : "none" }}>
-      <svg viewBox="0 0 100 12" preserveAspectRatio="none"
-        style={{ display: "block", width: "100%", height: "40px" }}
-        xmlns="http://www.w3.org/2000/svg">
+    <div style={{
+      width: "100%",
+      lineHeight: 0,
+      flexShrink: 0,
+      transform: flip ? "scaleY(-1)" : "none",
+    }}>
+      <svg
+        viewBox="0 0 100 14"
+        preserveAspectRatio="none"
+        style={{ display: "block", width: "100%", height: "44px" }}
+        xmlns="http://www.w3.org/2000/svg"
+      >
         {Array.from({ length: count }).map((_, i) => {
           const x = i * w;
-          return <polygon key={i} points={`${x},0 ${x + w},0 ${x + w / 2},12`} fill={PICADO[i % PICADO.length]} />;
+          return (
+            <polygon
+              key={i}
+              points={`${x},0 ${x + w},0 ${x + w / 2},14`}
+              fill={PICADO[i % PICADO.length]}
+            />
+          );
         })}
       </svg>
-    </div>
-  );
-}
-
-
-
-/* ─── SECTION HEADING ────────────────────────────────────────── */
-function SectionHeading({ title, sub, color = C.pink }) {
-  return (
-    <div style={{ marginBottom: "28px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-        <div style={{ width: "4px", height: "26px", borderRadius: "4px", background: color, boxShadow: `0 0 8px ${color}` }} />
-        <h2 style={{ margin: 0, fontFamily: FONT, fontWeight: "800", fontSize: "clamp(18px,4vw,24px)", color: C.textPrimary }}>{title}</h2>
-      </div>
-      {sub && <p style={{ margin: "0 0 0 14px", fontFamily: FONT, fontSize: "13px", color: C.textSecondary }}>{sub}</p>}
-    </div>
-  );
-}
-
-/* ─── TACO CARD ──────────────────────────────────────────────── */
-function TacoCard({ taco, onTap }) {
-  const [hov, setHov] = useState(false);
-  const TagIcon = taco.tagIcon;
-  return (
-    <div
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      onClick={onTap}
-      style={{
-        background: hov ? C.bgCardHov : C.bgCard,
-        border: `1.5px solid ${hov ? taco.color : C.border}`,
-        borderRadius: "16px", overflow: "hidden",
-        display: "flex", flexDirection: "column",
-        transform: hov ? "translateY(-4px)" : "translateY(0)",
-        boxShadow: hov ? `0 12px 32px rgba(0,0,0,0.4), 0 0 20px ${taco.color}22` : "0 2px 8px rgba(0,0,0,0.3)",
-        transition: "all 0.25s ease", cursor: "pointer",
-      }}
-    >
-      <div style={{ height: "6px", background: taco.color, boxShadow: `0 0 12px ${taco.color}66` }} />
-      <div style={{ padding: "18px" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: `${taco.color}18`, border: `1px solid ${taco.color}44`, color: taco.color, borderRadius: "20px", padding: "3px 10px", marginBottom: "12px", fontSize: "11px", fontWeight: "700", fontFamily: FONT }}>
-          <TagIcon size={11} /> {taco.tag}
-        </div>
-        <div style={{ width: "52px", height: "52px", borderRadius: "12px", background: `${taco.color}15`, border: `1.5px solid ${taco.color}33`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "14px" }}>
-          <Utensils size={24} color={taco.color} />
-        </div>
-        <h3 style={{ margin: "0 0 6px", fontFamily: FONT, fontWeight: "800", fontSize: "16px", color: C.textPrimary }}>
-          Taco de {taco.name}
-        </h3>
-        <p style={{ margin: "0 0 16px", fontFamily: FONT, fontSize: "12.5px", color: C.textSecondary, lineHeight: "1.55" }}>
-          {taco.desc}
-        </p>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "12px", borderTop: `1px solid ${C.border}` }}>
-          <span style={{ fontFamily: FONT, fontWeight: "800", fontSize: "20px", color: taco.color }}>${taco.price}</span>
-          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-            <ArrowRight size={14} color={taco.color} />
-            <span style={{ color: taco.color, fontWeight: "700", fontSize: "12px", fontFamily: FONT }}>Ordenar</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── REVIEW CARD ────────────────────────────────────────────── */
-function ReviewCard({ r }) {
-  return (
-    <div style={{ background: C.bgCard, border: `1.5px solid ${C.border}`, borderLeft: `3px solid ${r.color}`, borderRadius: "14px", padding: "18px 20px", boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: `${r.color}22`, border: `1.5px solid ${r.color}55`, display: "flex", alignItems: "center", justifyContent: "center", color: r.color, fontWeight: "800", fontSize: "13px", fontFamily: FONT }}>
-            {r.name[0]}
-          </div>
-          <span style={{ fontFamily: FONT, fontWeight: "700", fontSize: "14px", color: C.textPrimary }}>{r.name}</span>
-        </div>
-        <span style={{ fontFamily: FONT, fontSize: "11px", color: C.textMuted }}>{r.time}</span>
-      </div>
-      <div style={{ display: "flex", gap: "2px", marginBottom: "8px" }}>
-        {[1,2,3,4,5].map(s => (
-          <Star key={s} size={13} color={s <= r.stars ? C.yellow : C.textMuted} fill={s <= r.stars ? C.yellow : "none"} />
-        ))}
-      </div>
-      <p style={{ margin: 0, fontFamily: FONT, fontSize: "13px", color: C.textSecondary, lineHeight: "1.6" }}>"{r.text}"</p>
-      <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
-        <button style={{ background: "none", border: "none", color: C.textMuted, cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", fontFamily: FONT, padding: 0 }}>
-          <ThumbsUp size={12} /> Útil
-        </button>
-        <button style={{ background: "none", border: "none", color: C.textMuted, cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", fontFamily: FONT, padding: 0 }}>
-          <MessageCircle size={12} /> Responder
-        </button>
-      </div>
     </div>
   );
 }
@@ -134,7 +40,7 @@ function ReviewCard({ r }) {
    HOME
 ═══════════════════════════════════════════════════════════════ */
 export default function Home() {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
   const [visible, setVisible] = useState(false);
   const [now,     setNow]     = useState(new Date());
 
@@ -148,63 +54,198 @@ export default function Home() {
   const greeting = h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches";
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: FONT, overflowX: "hidden", color: C.textPrimary }}>
+    <div style={{
+      height: "100vh",
+      overflow: "hidden",
+      background: C.bg,
+      fontFamily: FONT,
+      color: C.textPrimary,
+      display: "flex",
+      flexDirection: "column",
+    }}>
 
+      {/* PAPEL PICADO SUPERIOR */}
       <PapelPicado />
 
       {/* ── HERO ── */}
-      <section style={{ background: C.bg, padding: "60px 24px 56px", textAlign: "center", position: "relative", overflow: "hidden", borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ position: "absolute", top: "-80px", left: "10%", width: "300px", height: "300px", borderRadius: "50%", background: `${C.pink}0D`, filter: "blur(60px)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "-80px", right: "10%", width: "280px", height: "280px", borderRadius: "50%", background: `${C.teal}0D`, filter: "blur(60px)", pointerEvents: "none" }} />
+      <section style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        position: "relative",
+        overflow: "hidden",
+        minHeight: 0,
+      }}>
 
-        <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(24px)", transition: "all 0.7s cubic-bezier(.34,1.2,.64,1)", position: "relative" }}>
+        {/* Degradado radial multi-color */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          background: `
+            radial-gradient(ellipse 70% 55% at 15% 20%,  ${C.pink}1A   0%, transparent 65%),
+            radial-gradient(ellipse 60% 50% at 85% 15%,  ${C.teal}16   0%, transparent 60%),
+            radial-gradient(ellipse 55% 50% at 80% 85%,  ${C.orange}14 0%, transparent 60%),
+            radial-gradient(ellipse 65% 45% at 20% 80%,  ${C.purple}14 0%, transparent 60%),
+            radial-gradient(ellipse 40% 40% at 50% 50%,  ${C.yellow}0C 0%, transparent 55%)
+          `,
+          pointerEvents: "none",
+          zIndex: 0,
+        }} />
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          background: `radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, ${C.bg}88 100%)`,
+          pointerEvents: "none",
+          zIndex: 0,
+        }} />
 
-          {/* Saludo + espera */}
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(255,255,255,0.05)", border: `1px solid ${C.borderBright}`, borderRadius: "30px", padding: "6px 16px", marginBottom: "20px", color: C.textSecondary, fontSize: "13px", fontWeight: "600", letterSpacing: "1px" }}>
-            <Clock size={13} color={C.yellow} />
-            {greeting} · Espera aprox. <strong style={{ color: C.orange }}>~8 min</strong>
+        {/* Contenido */}
+        <div style={{
+          position: "relative",
+          zIndex: 1,
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(24px)",
+          transition: "all 0.75s cubic-bezier(.34,1.2,.64,1)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "10px",
+          padding: "0 24px",
+        }}>
+
+          {/* Logo */}
+          <img
+            src="/logo.png"
+            alt="iTaquito logo"
+            style={{
+              height: "250px",
+              width: "auto",
+              objectFit: "contain",
+              marginBottom: "2px",
+              filter: `
+                drop-shadow(0 0 22px ${C.pink}55)
+                drop-shadow(0 0 50px ${C.orange}30)
+                drop-shadow(0 4px 12px rgba(0,0,0,0.45))
+              `,
+            }}
+          />
+
+          {/* Saludo pill */}
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "7px",
+            background: "rgba(255,255,255,0.06)",
+            border: `1px solid ${C.borderBright}`,
+            borderRadius: "30px",
+            padding: "5px 16px",
+            color: C.textSecondary,
+            fontSize: "13px",
+            fontWeight: "600",
+            letterSpacing: "0.8px",
+            backdropFilter: "blur(8px)",
+          }}>
+            <Clock size={12} color={C.yellow} />
+            {greeting}
           </div>
 
-          <h1 style={{ color: C.cream, fontSize: "clamp(38px,9vw,72px)", fontWeight: "800", margin: "0 0 8px", lineHeight: 1.05, letterSpacing: "-1px" }}>
-            Bienvenido a
-          </h1>
-          <h1 style={{ fontSize: "clamp(38px,9vw,72px)", fontWeight: "800", margin: "0 0 18px", lineHeight: 1.05, letterSpacing: "-1px", color: C.pink }}>
-            iTaquito
-          </h1>
-          <p style={{ color: C.textSecondary, fontSize: "16px", margin: "0 0 36px", fontWeight: "500" }}>
+          {/* Títulos — mismos tamaños, sin margen extra */}
+          <div style={{ lineHeight: 1.05, letterSpacing: "-1.5px" }}>
+            <div style={{
+              color: C.cream,
+              fontSize: "clamp(36px, 6vw, 72px)",
+              fontWeight: "800",
+            }}>
+              Bienvenido a
+            </div>
+            <div style={{
+              fontSize: "clamp(36px, 6vw, 72px)",
+              fontWeight: "800",
+              color: C.pink,
+              textShadow: `0 0 28px ${C.pink}66, 0 0 56px ${C.orange}33`,
+            }}>
+              iTaquito
+            </div>
+          </div>
+
+          {/* Subtítulo */}
+          <p style={{
+            color: C.textSecondary,
+            fontSize: "15px",
+            margin: 0,
+            fontWeight: "500",
+            maxWidth: "380px",
+            lineHeight: "1.5",
+          }}>
             Explora nuestro menú y realiza tu pedido desde la mesa
           </p>
 
           {/* CTAs */}
-          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            {/* Hacer mi pedido → /login */}
+          <div style={{
+            display: "flex",
+            gap: "12px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            marginTop: "4px",
+          }}>
             <button
               onClick={() => navigate("/login")}
-              style={{ background: C.pink, color: "#fff", border: "none", borderRadius: "12px", padding: "14px 30px", fontFamily: FONT, fontWeight: "800", fontSize: "15px", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", boxShadow: `0 0 24px ${C.pink}55`, transition: "box-shadow 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = `0 0 36px ${C.pink}88`}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = `0 0 24px ${C.pink}55`}
+              style={{
+                background: C.pink, color: "#fff", border: "none",
+                borderRadius: "12px", padding: "13px 30px",
+                fontFamily: FONT, fontWeight: "800", fontSize: "15px",
+                cursor: "pointer", display: "flex", alignItems: "center", gap: "8px",
+                boxShadow: `0 0 24px ${C.pink}55, 0 4px 14px rgba(0,0,0,0.3)`,
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.boxShadow = `0 0 40px ${C.pink}99, 0 4px 18px rgba(0,0,0,0.4)`;
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.boxShadow = `0 0 24px ${C.pink}55, 0 4px 14px rgba(0,0,0,0.3)`;
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
             >
-              <Utensils size={16} /> Hacer mi pedido
+              <Utensils size={15} /> Hacer mi pedido
             </button>
 
-            {/* Iniciar sesión → /login */}
             <button
               onClick={() => navigate("/login")}
-              style={{ background: "rgba(255,255,255,0.05)", color: C.textPrimary, border: `1px solid ${C.borderBright}`, borderRadius: "12px", padding: "14px 24px", fontFamily: FONT, fontWeight: "700", fontSize: "15px", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", transition: "all 0.2s" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.teal; e.currentTarget.style.color = C.teal; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.borderBright; e.currentTarget.style.color = C.textPrimary; }}
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                color: C.textPrimary,
+                border: `1.5px solid ${C.borderBright}`,
+                borderRadius: "12px", padding: "13px 26px",
+                fontFamily: FONT, fontWeight: "700", fontSize: "15px",
+                cursor: "pointer", display: "flex", alignItems: "center", gap: "8px",
+                backdropFilter: "blur(8px)",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = C.teal;
+                e.currentTarget.style.color = C.teal;
+                e.currentTarget.style.boxShadow = `0 0 18px ${C.teal}33`;
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = C.borderBright;
+                e.currentTarget.style.color = C.textPrimary;
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
             >
-              <LogIn size={15} color={C.teal} /> Iniciar sesión
+              <LogIn size={14} color={C.teal} /> Iniciar sesión
             </button>
           </div>
+
         </div>
       </section>
 
+      {/* PAPEL PICADO INFERIOR */}
       <PapelPicado flip />
 
-    
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

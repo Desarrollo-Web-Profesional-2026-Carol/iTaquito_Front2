@@ -7,7 +7,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const path = location.pathname;
 
-  const hideChrome = ['/', '/login', '/menu', '/my-order', '/my-orders'].includes(path);
+  const hideChrome = ['/', '/login', '/menu', '/my-order', '/my-orders', '/cajero'].includes(path);
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
