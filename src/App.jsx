@@ -2,19 +2,20 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
-import Layout from "./components/Layout/Layout";
-import Login from "./pages/Login";
-import Home from "./pages/Home";
-import Tables from "./pages/Tables";
-import Dashboard from "./pages/Dashboard";
-import Usuarios from "./pages/Usuarios";
-import Cocineros from "./pages/Cocineros";
-import MyOrder from "./pages/MyOrder";
-import MyOrders from "./pages/MyOrders";
-import MenuCliente from "./pages/MenuCliente";
-import MenuAdmin from "./pages/MenuAdmin";
-import AdminUsers from "./pages/AdminUsers";
-import CajeroPanel from "./pages/CajeroPanel"; 
+import { C } from "./styles/designTokens";
+import Layout from "./components/layout/Layout";
+import Login from "./modules/auth/pages/Login";
+import Home from "./modules/home/pages/Home";
+import Tables from "./modules/admin/pages/Tables";
+import Dashboard from "./modules/admin/pages/Dashboard";
+import Usuarios from "./modules/admin/pages/Usuarios";
+import Cocineros from "./modules/staff/pages/Cocineros";
+import MyOrder from "./modules/mesa/pages/MyOrder";
+import MyOrders from "./modules/mesa/pages/MyOrders";
+import MenuMesa from "./modules/mesa/pages/MenuMesa";
+import MenuAdmin from "./modules/admin/pages/MenuAdmin";
+import AdminUsers from "./modules/admin/pages/AdminUsers";
+import CajeroPanel from "./modules/staff/pages/CajeroPanel"; 
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -27,14 +28,14 @@ const PrivateRoute = ({ children }) => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#ECF0F1",
+          background: C.bg,
         }}
       >
         <div
           style={{
             width: "48px",
             height: "48px",
-            border: "4px solid #E83E8C",
+            border: `4px solid ${C.pink}`,
             borderTopColor: "transparent",
             borderRadius: "50%",
             animation: "spin 1s linear infinite",
@@ -121,7 +122,7 @@ const CajeroRoute = ({ children }) => {
 // Redirige /menu al componente correcto según rol
 const MenuRouter = () => {
   const { isAdmin } = useAuth();
-  return isAdmin ? <MenuAdmin /> : <MenuCliente />;
+  return isAdmin ? <MenuAdmin /> : <MenuMesa />;
 };
 
 function AppContent() {

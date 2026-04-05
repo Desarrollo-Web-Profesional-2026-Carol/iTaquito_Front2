@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API = import.meta.env.VITE_API_URL || 'https://itaquitobackend-production-b582.up.railway.app/api';
+const API = process.env.REACT_APP_API_URL || 'https://itaquitobackend-production-b582.up.railway.app/api';
 
 const api = axios.create({ baseURL: API });
 
@@ -20,8 +20,8 @@ export const ordersService = {
     Crear pedido
     items: [{ iProductoId, iCantidad, sNotas? }]
   */
-  create: async ({ iMesaId, items, sNotas = null }) => {
-    const { data } = await api.post('/orders', { iMesaId, items, sNotas });
+  create: async ({ iMesaId, items, sNotas = null, sTokenSesion = null }) => {
+    const { data } = await api.post('/orders', { iMesaId, items, sNotas, sTokenSesion });
     return data;
   },
 
@@ -31,6 +31,7 @@ export const ordersService = {
     if (filters.sEstado) params.sEstado = filters.sEstado;
     if (filters.iMesaId) params.iMesaId = filters.iMesaId;
     if (filters.fecha)   params.fecha   = filters.fecha;
+    if (filters.sTokenSesion) params.sTokenSesion = filters.sTokenSesion;
     const { data } = await api.get('/orders', { params });
     return data;
   },

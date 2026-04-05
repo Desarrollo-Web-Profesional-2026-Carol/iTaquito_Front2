@@ -17,15 +17,33 @@ export const productsService = {
     return data;
   },
 
-  // El admin manda JSON puro (sImagenUrl como string)
-  // Si en el futuro usas subida de archivos, cambia a FormData aquí
   create: async (payload) => {
-    const { data } = await api.post('/products', payload);
+    let dataPayload = payload;
+    let headers = {};
+    if (payload.imagenFile) {
+      dataPayload = new FormData();
+      Object.keys(payload).forEach(key => {
+        if (key === 'imagenFile') dataPayload.append('imagen', payload[key]);
+        else if (payload[key] !== undefined && payload[key] !== null) dataPayload.append(key, payload[key]);
+      });
+      headers = { 'Content-Type': 'multipart/form-data' };
+    }
+    const { data } = await api.post('/products', dataPayload, { headers });
     return data;
   },
 
   update: async (id, payload) => {
-    const { data } = await api.put(`/products/${id}`, payload);
+    let dataPayload = payload;
+    let headers = {};
+    if (payload.imagenFile) {
+      dataPayload = new FormData();
+      Object.keys(payload).forEach(key => {
+        if (key === 'imagenFile') dataPayload.append('imagen', payload[key]);
+        else if (payload[key] !== undefined && payload[key] !== null) dataPayload.append(key, payload[key]);
+      });
+      headers = { 'Content-Type': 'multipart/form-data' };
+    }
+    const { data } = await api.put(`/products/${id}`, dataPayload, { headers });
     return data;
   },
 

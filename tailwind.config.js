@@ -7,13 +7,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'rosa': '#E83E8C',
-        'naranja': '#F9690E',
-        'amarillo': '#F4D03F',
-        'turquesa': '#1ABC9C',
-        'morado': '#9B59B6',
-        'blanco': '#ECF0F1',
-        'oscuro': '#2C3E50',
+        'rosa': '#D9736A',
+        'naranja': '#D47A4A',
+        'amarillo': '#D1AB5C',
+        'turquesa': '#6A9C89',
+        'morado': '#8E7B9D',
+        'blanco': '#FAF6F0',
+        'oscuro': '#4A3F35',
       },
       animation: {
         'bounce-slow': 'bounce 3s infinite',

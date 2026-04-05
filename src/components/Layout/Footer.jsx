@@ -20,7 +20,7 @@ const Footer = () => {
       <div style={{
         height: "3px",
         background: `linear-gradient(90deg, ${C.pink}, ${C.orange}, ${C.yellow}, ${C.teal}, ${C.purple})`,
-        boxShadow: `0 0 10px ${C.pink}66`,
+        boxShadow: 'none',
       }} />
 
       <div style={{
@@ -51,7 +51,7 @@ const Footer = () => {
                 width: "38px", height: "38px", borderRadius: "9px",
                 background: `linear-gradient(135deg, ${C.pink}, ${C.purple})`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: `0 0 10px ${C.pink}66`,
+                boxShadow: 'none',
               }}>
                 <UtensilsCrossed size={18} color="#fff" />
               </div>
@@ -325,3 +325,4 @@ const Footer = () => {
 };
 
 export default Footer;
+

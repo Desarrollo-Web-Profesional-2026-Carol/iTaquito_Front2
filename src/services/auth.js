@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API = import.meta.env.VITE_API_URL || 'https://itaquitobackend-production-b582.up.railway.app/api';
+const API = process.env.REACT_APP_API_URL || 'https://itaquitobackend-production-b582.up.railway.app/api';
 
 const api = axios.create({ baseURL: API });
 

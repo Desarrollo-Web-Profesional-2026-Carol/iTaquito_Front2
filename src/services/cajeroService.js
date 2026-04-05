@@ -16,19 +16,19 @@ export const cajeroService = {
   },
 
   // Aprobar pago de mesa.
-  // Si el backend devuelve nuevoTokenCliente, lo guarda en localStorage
+  // Si el backend devuelve nuevoTokenMesa, lo guarda en localStorage
   // para que la próxima vez que el cliente consulte sus pedidos,
   // su sesión quede limpia (loginAt nuevo).
-  approvePayment: async (mesaId, metodoPago) => {
-    const { data } = await api.post(`/cajero/approve-payment/${mesaId}`, { metodoPago });
+  approvePayment: async (mesaId, metodoPago, sTokenSesion) => {
+    const { data } = await api.post(`/cajero/approve-payment/${mesaId}`, { metodoPago, sTokenSesion });
 
     // FIX: guardar nuevo token del cliente si el backend lo devuelve
-    if (data?.data?.nuevoTokenCliente) {
+    if (data?.data?.nuevoTokenMesa) {
       // Se guarda bajo una clave distinta — el cliente lo tomará
       // al hacer su próxima consulta (polling o refresh de página).
       localStorage.setItem(
         `token_mesa_${mesaId}`,
-        data.data.nuevoTokenCliente
+        data.data.nuevoTokenMesa
       );
     }
 
