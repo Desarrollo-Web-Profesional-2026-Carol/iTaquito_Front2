@@ -14,7 +14,7 @@ const HOME_BY_ROL = {
   admin:   '/dashboard',
   mesero:  '/tables',
   cajero:    '/cajero',
-  cliente: '/menu',
+  mesa: '/menu',
 };
 
 export const AuthProvider = ({ children }) => {
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
     isAdmin:   user?.rol === 'admin',
     isMesero:  user?.rol === 'mesero',
     isCajero:    user?.rol === 'cajero',
-    isCliente: user?.rol === 'cliente',
+    isMesa: user?.rol === 'mesa',
   };
 
   return (

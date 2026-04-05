@@ -1,46 +1,46 @@
 
 export const C = {
   // ── Colores de acento  ──────────────────────────────
-  pink:          "#E83E8C",   // Rosa Mexicano 
-  pinkDim:       "#C0306E",
-  pinkLight:     "#F06DAA",
+  pink:          "#5A8A3C",   // Verde lima (aguacate/cilantro) — vibra taquería
+  pinkDim:       "#3F6229",
+  pinkLight:     "#8ABF6A",
 
-  orange:        "#F9690E",   // Naranja Intenso 
-  orangeDim:     "#C9520A",
-  orangeLight:   "#FAA55A",
+  orange:        "#D47A4A",   // Naranja quemado (chile/tamarindo)
+  orangeDim:     "#A85C38",
+  orangeLight:   "#EAA684",
 
-  yellow:        "#F4D03F",   // Amarillo Eléctrico —
-  yellowDim:     "#C4A810",
+  yellow:        "#D1AB5C",   // Mostaza/Maíz
+  yellowDim:     "#9E8144",
 
-  teal:          "#1ABC9C",   // Turquesa 
-  tealDim:       "#148F77",
-  tealLight:     "#48C9B0",
+  teal:          "#6A9C89",   // Salvia
+  tealDim:       "#4C6E60",
+  tealLight:     "#9CCBBA",
 
-  purple:        "#9B59B6",   // Morado Vibrante 
-  purpleDim:     "#7D3C98",
-  purpleLight:   "#B07CC6",
+  purple:        "#8E7B9D",   // Morado deslavado
+  purpleDim:     "#655770",
+  purpleLight:   "#B4A4C2",
 
-  // ── Fondos oscuros (jerarquía de profundidad) ──────────────────
-  bg:            "#0F0D0B",   // Fondo principal 
-  bgCard:        "#1A1612",   // Cards y paneles
-  bgCardHov:     "#221E18",   // Card en hover
-  bgAccent:      "#251F18",   // Header, footer, barras
+  // ── Fondos (claro mate) ─────────────────────────────
+  bg:            "#FAF6F0",   // Fondo crema claro principal
+  bgCard:        "#F2EBE1",   // Cards y paneles (Beige)
+  bgCardHov:     "#E6DEC8",   // Hover en panel
+  bgAccent:      "#E8E0D2",   // Zonas grises/arena
 
   // ── Bordes ────────────────────────────────────────────────────
-  border:        "#2E2820",   // Borde estándar
-  borderBright:  "#3D3428",   // Borde destacado
+  border:        "#D1C1AA",   // Borde suave
+  borderBright:  "#B3A38F",   // Borde con un poco más de peso
 
   // ── Textos ────────────────────────────────────────────────────
-  cream:         "#F5EDD8",   // Blanco cálido para títulos
-  textPrimary:   "#F0E6D0",   // Texto principal
-  textSecondary: "#9A8870",   // Texto secundario / subtítulos
-  textMuted:     "#5C5040",   // Texto desactivado / placeholders
+  cream:         "#4A3F35",   // Títulos (Café oscuro para contraste sobre beige)
+  textPrimary:   "#4A3F35",   // Texto general
+  textSecondary: "#7A6B5D",   // Subtítulos
+  textMuted:     "#A19280",   // Texto desactivado
 
   // ── Utilidades ────────────────────────────────────────────────
   white:         "#FFFFFF",
-  success:       "#1ABC9C",   // Verde 
-  error:         "#E83E8C",   // Error 
-  warning:       "#F4D03F",   // Advertencia 
+  success:       "#6A9C89",   // Verde
+  error:         "#C0392B",   // Error (rojo)
+  warning:       "#D1AB5C",   // Advertencia
 };
 
 // ─── FUENTE ───────────────────────────────────────────────────────
@@ -67,13 +67,11 @@ export const ROLE_COLORS = {
   mesero:  C.orange,
   cajero:  C.yellow,
   caja:    C.yellow,
-  cliente: C.teal,
+  mesa:    C.teal,
   taquero: C.purple,
 };
 
 // ─── SOMBRAS NEÓN (helpers) ───────────────────────────────────────
-export const glow = (color, intensity = "55") =>
-  `0 0 12px ${color}${intensity}`;
+export const glow = (color, intensity = "55") => `none`;
 
-export const glowLg = (color, intensity = "44") =>
-  `0 0 28px ${color}${intensity}`;
+export const glowLg = (color, intensity = "44") => `none`;

@@ -144,8 +144,8 @@ const NAV_CONFIG = {
       { label: "Reportes", path: "/reports", Icon: BarChart3 },
     ],
   },
-  cliente: {
-    label: "Cliente",
+  mesa: {
+    label: "Mesa",
     accentColor: C.teal,
     links: [
       { label: "Inicio", path: "/home", Icon: Home },
@@ -176,7 +176,7 @@ const NAV_CONFIG = {
 /* ─── ROLE BADGE COLORS ──────────────────────────────────────── */
 const ROLE_STYLES = {
   admin: { bg: `${C.pink}22`, border: `${C.pink}55`, color: C.pink },
-  cliente: { bg: `${C.teal}22`, border: `${C.teal}55`, color: C.teal },
+  mesa: { bg: `${C.teal}22`, border: `${C.teal}55`, color: C.teal },
   mesero: { bg: `${C.orange}22`, border: `${C.orange}55`, color: C.orange },
   cajero: { bg: `${C.yellow}22`, border: `${C.yellow}55`, color: C.yellow },
 };
@@ -195,9 +195,9 @@ const Header = () => {
   const [toast, setToast] = useState(null);
 
   // Detecta el rol del usuario (ajusta según tu AuthContext)
-  const role = user?.rol || "cliente";
-  const config = NAV_CONFIG[role] || NAV_CONFIG.cliente;
-  const rs = ROLE_STYLES[role] || ROLE_STYLES.cliente;
+  const role = user?.rol || "mesa";
+  const config = NAV_CONFIG[role] || NAV_CONFIG.mesa;
+  const rs = ROLE_STYLES[role] || ROLE_STYLES.mesa;
 
   const showToast = (message, type = 'success') => setToast({ message, type });
 
@@ -252,7 +252,7 @@ const Header = () => {
           style={{
             height: "3px",
             background: `linear-gradient(90deg, ${config.accentColor}, ${config.accentColor}88, transparent)`,
-            boxShadow: `0 0 10px ${config.accentColor}66`,
+            boxShadow: 'none',
           }}
         />
 
@@ -287,7 +287,7 @@ const Header = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: `0 0 10px ${config.accentColor}66`,
+                boxShadow: 'none',
               }}
             >
               <UtensilsCrossed size={17} color="#fff" />
@@ -686,3 +686,4 @@ const Header = () => {
 };
 
 export default Header;
+
