@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import { C } from "./styles/designTokens";
+import Layout from "./components/layout/Layout";
 import Login from "./modules/auth/pages/Login";
 import Home from "./modules/home/pages/Home";
 import Tables from "./modules/admin/pages/Tables";
