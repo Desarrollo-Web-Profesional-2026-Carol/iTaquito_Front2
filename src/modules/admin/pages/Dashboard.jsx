@@ -157,6 +157,14 @@ const Dashboard = () => {
     return () => clearInterval(t);
   }, []);
 
+   useEffect(() => {
+    // Si no es admin, redirige al 403
+    if (user.rol !== 'admin') {
+      navigate('/403', { replace: true });
+    }
+  }, [user.rol, navigate]);
+
+
   // Función para formatear tiempo relativo
   const formatTimeAgo = (dateString) => {
     if (!dateString) return 'Reciente';

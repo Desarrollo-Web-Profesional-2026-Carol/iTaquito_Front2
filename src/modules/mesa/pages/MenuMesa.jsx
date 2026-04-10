@@ -598,11 +598,11 @@ const MenuMesa = () => {
             ¡Bienvenido a iTaquito!
           </h1>
           <p style={{ color: C.textSecondary, fontSize: '16px', maxWidth: '400px', lineHeight: 1.6, margin: '0 0 32px' }}>
-            Toca en Comenzar para generar tu sesión. Todos los pedidos se agruparán en tu cuenta y podrás pagar al finalizar.
+            Toca en COMENZAR para realizar tu pedido.
           </p>
           <button onClick={handleComenzar} style={{ background: C.pink, color: '#fff', border: 'none', borderRadius: '16px', padding: '16px 40px', fontSize: '18px', fontWeight: '800', fontFamily: FONT, cursor: 'pointer', boxShadow: glow(C.pink, '66'), transition: 'transform 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-            Tocar para Comenzar
+            Comenzar !
           </button>
         </div>
       )}
