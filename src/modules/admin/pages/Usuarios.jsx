@@ -1,20 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { usuariosService } from "../../../services/usuarios";
+import { authService } from "../../../services/auth";
 import UsuariosCard from "../components/Usuarios/UsuariosCard";
 import UsuariosModal from "../components/Usuarios/UsuariosModal";
 import ConfirmModal from "../../../components/common/ConfirmModal";
 import { C, FONT, glow, ROLE_COLORS } from "../../../styles/designTokens";
-import axios from "axios";
 import {
   Users, Plus, RefreshCw, Shield, Coffee, CreditCard,
   ChefHat, User, Search, X, SlidersHorizontal,
   ShieldCheck, ShieldOff, QrCode, Copy, CheckCircle,
   AlertCircle, Lock, KeyRound, Eye, EyeOff, Save,
 } from "lucide-react";
-
-const API = process.env.REACT_APP_API_URL || "http://localhost:3000/api";
-const getToken = () => localStorage.getItem("token");
 
 /* ─── ROLES PARA FILTRO ──────────────────────────────────────── */
 const ROL_CHIPS = [
@@ -87,12 +84,12 @@ function EmptyState({ isAdmin, onCreate }) {
 
 /* ─── MODAL 2FA SETUP ────────────────────────────────────────── */
 function Modal2FASetup({ user, onClose, onDisable }) {
-  const [step, setStep]             = useState("loading");
-  const [qrUrl, setQrUrl]           = useState("");
+  const [step, setStep]               = useState("loading");
+  const [qrUrl, setQrUrl]             = useState("");
   const [backupCodes, setBackupCodes] = useState([]);
-  const [copiedIdx, setCopiedIdx]   = useState(null);
-  const [error, setError]           = useState("");
-  const [disabling, setDisabling]   = useState(false);
+  const [copiedIdx, setCopiedIdx]     = useState(null);
+  const [error, setError]             = useState("");
+  const [disabling, setDisabling]     = useState(false);
 
   useEffect(() => {
     if (!user.twoFactorEnabled) enableFor(user.id);
@@ -102,10 +99,7 @@ function Modal2FASetup({ user, onClose, onDisable }) {
   const enableFor = async (userId) => {
     setStep("loading"); setError("");
     try {
-      const { data } = await axios.post(
-        `${API}/auth/admin/enable-2fa/${userId}`, {},
-        { headers: { Authorization: `Bearer ${getToken()}` } }
-      );
+      const data = await authService.enable2FAForUser(userId); // ✅
       setQrUrl(data.qrCodeUrl);
       setBackupCodes(data.backupCodes);
       setStep("qr");
@@ -118,10 +112,7 @@ function Modal2FASetup({ user, onClose, onDisable }) {
   const handleDisable = async () => {
     setDisabling(true);
     try {
-      await axios.post(
-        `${API}/auth/admin/disable-2fa/${user.id}`, {},
-        { headers: { Authorization: `Bearer ${getToken()}` } }
-      );
+      await authService.disable2FAForUser(user.id); 
       onDisable(user.id);
       onClose();
     } catch (e) {
@@ -335,11 +326,7 @@ function ModalResetPassword({ user, onClose }) {
     if (newPassword.length < 6) return setError("La contraseña debe tener al menos 6 caracteres.");
     setSaving(true); setError("");
     try {
-      await axios.post(
-        `${API}/auth/admin/reset-password/${user.id}`,
-        { newPassword },
-        { headers: { Authorization: `Bearer ${getToken()}` } }
-      );
+      await authService.adminResetPassword(user.id, newPassword); // ✅
       setDone(true);
     } catch (e) {
       setError(e.response?.data?.message || "Error al restablecer.");
@@ -485,8 +472,8 @@ const Usuarios = () => {
     setTimeout(() => setRefreshing(false), 600);
   };
 
-  const handleCreate  = () => { setSelectedUser(null); setModalOpen(true); };
-  const handleEdit    = (u) => { setSelectedUser(u); setModalOpen(true); };
+  const handleCreate      = () => { setSelectedUser(null); setModalOpen(true); };
+  const handleEdit        = (u) => { setSelectedUser(u); setModalOpen(true); };
   const handleDeleteClick = (id) => setDeleteModalId(id);
 
   const confirmDelete = async () => {
