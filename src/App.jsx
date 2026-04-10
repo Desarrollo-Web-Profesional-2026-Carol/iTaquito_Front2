@@ -17,6 +17,9 @@ import MenuAdmin from "./modules/admin/pages/MenuAdmin";
 import AdminUsers from "./modules/admin/pages/AdminUsers";
 import CajeroPanel from "./modules/staff/pages/CajeroPanel";
 import ErrorPage from "./modules/errors/ErrorPage";
+import ResetPassword from "./modules/auth/pages/ResetPassword";
+
+
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -136,6 +139,7 @@ function AppContent() {
 
         {/* Rutas públicas */}
         <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<Home />} />
 
         {/* Rutas protegidas - solo ADMIN */}
