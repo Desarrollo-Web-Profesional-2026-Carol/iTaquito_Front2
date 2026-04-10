@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import { authService } from '../../../services/auth';
 import { C, FONT, glow } from '../../../styles/designTokens';
 import { Lock, CheckCircle, AlertCircle, RefreshCw, ArrowLeft, Eye, EyeOff } from 'lucide-react';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const PAPEL_PICADO = [C.pink, C.orange, C.yellow, C.teal, C.purple, C.pinkDim, C.orangeDim, C.tealDim];
 function PapelPicado() {
@@ -47,8 +45,8 @@ export default function ResetPassword() {
       }
 
       try {
-        const response = await axios.get(`${API}/auth/verify-reset-token/${token}`);
-        setValidToken(response.data.valid);
+        const response = await authService.verifyResetToken(token);
+        setValidToken(response.valid);
       } catch (err) {
         setValidToken(false);
         setError('El enlace ha expirado o es inválido');
@@ -76,7 +74,7 @@ export default function ResetPassword() {
     setMessage('');
 
     try {
-      await axios.post(`${API}/auth/reset-password`, { token, newPassword });
+      await authService.resetPassword(token, newPassword);
       setMessage('Contraseña restablecida exitosamente');
       setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
