@@ -15,7 +15,8 @@ import MyOrders from "./modules/mesa/pages/MyOrders";
 import MenuMesa from "./modules/mesa/pages/MenuMesa";
 import MenuAdmin from "./modules/admin/pages/MenuAdmin";
 import AdminUsers from "./modules/admin/pages/AdminUsers";
-import CajeroPanel from "./modules/staff/pages/CajeroPanel"; 
+import CajeroPanel from "./modules/staff/pages/CajeroPanel";
+import ErrorPage from "./modules/errors/ErrorPage";
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -49,7 +50,7 @@ const PrivateRoute = ({ children }) => {
   return user ? children : <Navigate to="/login" />;
 };
 
-// Solo admin — redirige a login si no está autenticado, a home si no es admin
+// Solo admin — redirige a login si no está autenticado, a 403 si no es admin
 const AdminRoute = ({ children }) => {
   const { user, loading, isAdmin } = useAuth();
 
@@ -80,7 +81,7 @@ const AdminRoute = ({ children }) => {
   }
 
   if (!user) return <Navigate to="/login" />;
-  if (!isAdmin) return <Navigate to="/" />;
+  if (!isAdmin) return <Navigate to="/403" replace />; // Cambiado a /403
   return children;
 };
 
@@ -115,7 +116,7 @@ const CajeroRoute = ({ children }) => {
   }
 
   if (!user) return <Navigate to="/login" />;
-  if (user.rol !== 'cajero' && user.rol !== 'admin') return <Navigate to="/" />;
+  if (user.rol !== "cajero" && user.rol !== "admin") return <Navigate to="/403" replace />; // Cambiado a /403
   return children;
 };
 
@@ -129,39 +130,57 @@ function AppContent() {
   return (
     <Layout>
       <Routes>
-        {/* Públicas */}
-        <Route path="/login" element={<Login />} />
+        {/* Rutas de error - deben ir PRIMERO */}
+        <Route path="/403" element={<ErrorPage code={403} />} />
+        <Route path="/500" element={<ErrorPage code={500} />} />
 
-        {/* Ruta Home - Pública */}
+        {/* Rutas públicas */}
+        <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
 
-        {/* Rutas protegidas */}
+        {/* Rutas protegidas - solo ADMIN */}
         <Route
           path="/dashboard"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <Dashboard />
-            </PrivateRoute>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <AdminRoute>
+              <Usuarios />
+            </AdminRoute>
           }
         />
         <Route
           path="/tables"
           element={
-            <PrivateRoute>
+            <AdminRoute>
               <Tables />
-            </PrivateRoute>
+            </AdminRoute>
           }
         />
-
         <Route
-          path="/users"
+          path="/admin-users"
           element={
-            <PrivateRoute>
-              <Usuarios />
-            </PrivateRoute>
+            <AdminRoute>
+              <AdminUsers />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/menu-admin"
+          element={
+            <AdminRoute>
+              <MenuAdmin />
+            </AdminRoute>
           }
         />
 
+        {/* Rutas protegidas - cualquier usuario autenticado */}
         <Route
           path="/menu"
           element={
@@ -202,16 +221,8 @@ function AppContent() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/admin-users"
-          element={
-            <AdminRoute>
-              <AdminUsers />
-            </AdminRoute>
-          }
-        />
 
-        {/* Nueva ruta para el panel de cajero */}
+        {/* Ruta para cajero */}
         <Route
           path="/cajero"
           element={
@@ -221,8 +232,8 @@ function AppContent() {
           }
         />
 
-        {/* Redirección por defecto (opcional, ya tenemos Home en "/") */}
-        {/* <Route path="*" element={<Navigate to="/" />} /> */}
+        {/* Catch-all 404 - SIEMPRE al final */}
+        <Route path="*" element={<ErrorPage code={404} />} />
       </Routes>
     </Layout>
   );

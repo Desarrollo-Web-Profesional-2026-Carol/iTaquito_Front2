@@ -22,11 +22,30 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // 401 — sesión expirada
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
+      return Promise.reject(error);
     }
+
+    // 500 — error interno del servidor
+    if (error.response?.status === 500) {
+      window.location.href = '/500';
+      return Promise.reject(error);
+    }
+      // 403 — acceso sin permiso
+    if (error.response?.status === 403) {
+  return Promise.reject(error);
+    }
+
+    // Sin respuesta — servidor caído o sin internet
+    if (!error.response) {
+      window.location.href = '/500';
+      return Promise.reject(error);
+    }
+
     return Promise.reject(error);
   }
 );
