@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
+import { authService } from '../../../services/auth';
 import { C, FONT, ROLE_COLORS, glow } from '../../../styles/designTokens';
 import {
   Mail, Lock, LogIn, AlertCircle, Eye, EyeOff,
   Utensils, ShieldCheck, KeyRound, HelpCircle,
   ArrowLeft, CheckCircle, RefreshCw,
 } from 'lucide-react';
-import axios from 'axios';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 /* ─── PAPEL PICADO ───────────────────────────────────────────── */
 const PICADO = [C.pink, C.orange, C.yellow, C.teal, C.purple, C.pinkDim, C.orangeDim, C.tealDim];
@@ -385,7 +383,7 @@ function StepPasswordReset({ onBack }) {
     setError(''); 
     setLoading(true);
     try {
-      await axios.post(`${API}/auth/request-reset`, { email });
+      await authService.requestPasswordReset(email); // ✅ usa authService
       setSent(true);
     } catch (err) {
       setError(err.response?.data?.message || 'Error al enviar la solicitud');
