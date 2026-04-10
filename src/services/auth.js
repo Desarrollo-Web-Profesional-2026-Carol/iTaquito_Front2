@@ -75,15 +75,37 @@ export const authService = {
     return data;
   },
 
-  // Solicitar reset de contraseña
+  // ========== RECUPERACIÓN DE CONTRASEÑA ==========
+  
+  // Solicitar reset de contraseña (envía email)
   requestPasswordReset: async (email) => {
     const { data } = await api.post('/auth/request-reset', { email });
     return data;
   },
 
+  // Verificar token de recuperación (válido/no expirado)
+  verifyResetToken: async (token) => {
+    const { data } = await api.get(`/auth/verify-reset-token/${token}`);
+    return data;
+  },
+
+  // Restablecer contraseña con token
+  resetPassword: async (token, newPassword) => {
+    const { data } = await api.post('/auth/reset-password', { token, newPassword });
+    return data;
+  },
+
+  // ========== ADMIN: Gestión de usuarios ==========
+
   // Admin: Resetear contraseña de usuario
   adminResetPassword: async (userId, newPassword) => {
     const { data } = await api.post(`/auth/admin/reset-password/${userId}`, { newPassword });
+    return data;
+  },
+
+  // Admin: Generar contraseña temporal para usuario
+  generateTempPassword: async (userId) => {
+    const { data } = await api.post(`/auth/admin/generate-temp-password/${userId}`);
     return data;
   },
 
@@ -104,6 +126,8 @@ export const authService = {
     const { data } = await api.get('/auth/my-backup-codes');
     return data;
   },
+
+  // ========== UTILIDADES ==========
 
   // Obtener usuario actual del localStorage
   getCurrentUser: () => {

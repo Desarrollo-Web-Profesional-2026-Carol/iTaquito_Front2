@@ -86,13 +86,12 @@ function InputField({ id, type, label, value, onChange, Icon, extra, accentColor
 }
 
 /* ─── PASO 1: FORMULARIO LOGIN ───────────────────────────────── */
-function StepLogin({ on2FARequired }) {
+function StepLogin({ on2FARequired, onForgotPassword }) {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
-  const [showReset, setShowReset] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -103,11 +102,9 @@ function StepLogin({ on2FARequired }) {
     try {
       const result = await login(email, password);
       
-      // Si el login requiere 2FA
       if (result?.requiresTwoFactor) {
         on2FARequired(result.userId, email, password);
       }
-      // Si no, el AuthContext ya maneja la redirección automáticamente
       
     } catch (err) {
       const msg = err.response?.data?.message || 'Correo o contraseña incorrectos';
@@ -122,8 +119,6 @@ function StepLogin({ on2FARequired }) {
     setPassword(p); 
     setError(''); 
   };
-
-  if (showReset) return <StepPasswordReset onBack={() => setShowReset(false)} />;
 
   return (
     <>
@@ -167,7 +162,7 @@ function StepLogin({ on2FARequired }) {
       </form>
 
       {/* ¿Olvidaste tu contraseña? */}
-      <button onClick={() => setShowReset(true)} style={{
+      <button onClick={onForgotPassword} style={{
         background: 'none', border: 'none', cursor: 'pointer',
         color: C.textMuted, fontFamily: FONT, fontSize: '12px', fontWeight: '600',
         display: 'flex', alignItems: 'center', gap: '5px', margin: '12px auto 0',
@@ -218,13 +213,10 @@ function Step2FA({ userId, email, password, onBack }) {
     
     try {
       if (useBackup) {
-        // Usar código de respaldo
         await verify2FAWithBackup(email, password, code);
       } else {
-        // Usar código normal de 2FA
         await verify2FA(userId, code);
       }
-      // Si llegamos aquí, el login fue exitoso y ya se redirigió
     } catch (err) {
       const msg = err.response?.data?.message || 'Código inválido. Intenta de nuevo.';
       setError(msg);
@@ -233,12 +225,10 @@ function Step2FA({ userId, email, password, onBack }) {
     }
   };
 
-  // Manejo del input de 6 dígitos — solo números
   const handleCodeChange = (e) => {
     const val = e.target.value.replace(/\D/g, '').slice(0, 6);
     setCode(val);
     
-    // Auto-submit cuando se ingresan 6 dígitos
     if (val.length === 6 && !loading) {
       setTimeout(() => {
         const form = e.target.closest('form');
@@ -251,7 +241,6 @@ function Step2FA({ userId, email, password, onBack }) {
     const val = e.target.value.toUpperCase().slice(0, 8);
     setCode(val);
     
-    // Auto-submit cuando se ingresan 8 caracteres
     if (val.length === 8 && !loading) {
       setTimeout(() => {
         const form = e.target.closest('form');
@@ -262,7 +251,6 @@ function Step2FA({ userId, email, password, onBack }) {
 
   return (
     <>
-      {/* Icono 2FA */}
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <div style={{
           width: '52px', height: '52px', borderRadius: '14px',
@@ -296,7 +284,6 @@ function Step2FA({ userId, email, password, onBack }) {
 
       <form onSubmit={handleSubmit}>
         {!useBackup ? (
-          /* Input de 6 dígitos estilo OTP */
           <div style={{ marginBottom: '16px' }}>
             <input
               type="text" 
@@ -322,7 +309,6 @@ function Step2FA({ userId, email, password, onBack }) {
             />
           </div>
         ) : (
-          /* Input código de respaldo */
           <div style={{ marginBottom: '16px', position: 'relative' }}>
             <KeyRound size={15} color={C.textMuted} style={{
               position: 'absolute', left: '12px', top: '50%',
@@ -366,7 +352,6 @@ function Step2FA({ userId, email, password, onBack }) {
         </button>
       </form>
 
-      {/* Alternar método */}
       <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
         <button onClick={() => { setUseBackup(u => !u); setCode(''); setError(''); }} style={{
           background: 'none', border: 'none', cursor: 'pointer',
@@ -388,7 +373,7 @@ function Step2FA({ userId, email, password, onBack }) {
   );
 }
 
-/* ─── PASO 3: RECUPERACIÓN DE CONTRASEÑA ────────────────────── */
+/* ─── PASO 3: RECUPERACIÓN DE CONTRASEÑA (ENVÍA CORREO) ───────── */
 function StepPasswordReset({ onBack }) {
   const [email, setEmail]     = useState('');
   const [loading, setLoading] = useState(false);
@@ -420,10 +405,13 @@ function StepPasswordReset({ onBack }) {
         <CheckCircle size={24} color={C.teal} />
       </div>
       <h3 style={{ margin: '0 0 8px', color: C.textPrimary, fontWeight: '800', fontSize: '16px' }}>
-        Solicitud enviada
+        ¡Revisa tu correo!
       </h3>
-      <p style={{ margin: '0 0 20px', color: C.textMuted, fontSize: '13px', lineHeight: 1.6 }}>
-        Se ha notificado al administrador. Él te proporcionará una nueva contraseña pronto.
+      <p style={{ margin: '0 0 8px', color: C.textMuted, fontSize: '13px', lineHeight: 1.6 }}>
+        Te hemos enviado un enlace para restablecer tu contraseña a <strong>{email}</strong>.
+      </p>
+      <p style={{ margin: '0 0 20px', color: C.textMuted, fontSize: '12px', lineHeight: 1.5 }}>
+        El enlace expirará en 1 hora.
       </p>
       <button onClick={onBack} style={{
         background: C.pink, color: '#fff', border: 'none', borderRadius: '10px',
@@ -451,7 +439,7 @@ function StepPasswordReset({ onBack }) {
           Recuperar contraseña
         </h3>
         <p style={{ margin: 0, color: C.textMuted, fontSize: '13px', lineHeight: 1.5 }}>
-          Ingresa tu correo y notificaremos al administrador para que te asigne una nueva contraseña.
+          Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
         </p>
       </div>
 
@@ -483,7 +471,7 @@ function StepPasswordReset({ onBack }) {
         }}>
           {loading
             ? <><RefreshCw size={14} style={{ animation: 'spin 0.7s linear infinite' }} /> Enviando...</>
-            : 'Solicitar nueva contraseña'
+            : 'Enviar enlace de recuperación'
           }
         </button>
       </form>
@@ -503,13 +491,20 @@ function StepPasswordReset({ onBack }) {
    LOGIN PRINCIPAL
 ═══════════════════════════════════════════════════════════════ */
 const Login = () => {
-  // step: 'login' | '2fa' | 'reset'
-  const [step, setStep]         = useState('login');
+  const [step, setStep] = useState('login'); // 'login' | '2fa' | 'reset'
   const [twoFAData, setTwoFAData] = useState({ userId: null, email: '', password: '' });
 
   const handle2FARequired = (userId, email, password) => {
     setTwoFAData({ userId, email, password });
     setStep('2fa');
+  };
+
+  const handleForgotPassword = () => {
+    setStep('reset');
+  };
+
+  const handleBackToLogin = () => {
+    setStep('login');
   };
 
   return (
@@ -548,7 +543,6 @@ const Login = () => {
           <p style={{ margin: '0 0 4px', color: C.textSecondary, fontSize: '13px', fontWeight: '500' }}>
             Sistema de gestión integral
           </p>
-          {/* Línea sarape */}
           <div style={{ display: 'flex', gap: '3px', justifyContent: 'center', marginTop: '14px', marginBottom: '24px' }}>
             {[C.pink, C.orange, C.yellow, C.teal, C.purple].map((c, i) => (
               <div key={i} style={{ width: '28px', height: '3px', borderRadius: '2px', background: c }} />
@@ -561,6 +555,7 @@ const Login = () => {
           {step === 'login' && (
             <StepLogin
               on2FARequired={handle2FARequired}
+              onForgotPassword={handleForgotPassword}
             />
           )}
           {step === '2fa' && (
@@ -568,11 +563,11 @@ const Login = () => {
               userId={twoFAData.userId}
               email={twoFAData.email}
               password={twoFAData.password}
-              onBack={() => setStep('login')}
+              onBack={handleBackToLogin}
             />
           )}
           {step === 'reset' && (
-            <StepPasswordReset onBack={() => setStep('login')} />
+            <StepPasswordReset onBack={handleBackToLogin} />
           )}
         </div>
 

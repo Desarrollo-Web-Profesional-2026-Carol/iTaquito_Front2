@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
   const [user,    setUser]    = useState(null);
   const [loginAt, setLoginAt] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [pending2FA, setPending2FA] = useState(null); // Guardar estado temporal de 2FA
+  const [pending2FA, setPending2FA] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await authService.login(email, password, twoFactorCode);
       
-      // Caso 1: Se requiere 2FA (no se envió código o el usuario tiene 2FA activado)
+      // Caso 1: Se requiere 2FA
       if (data.requires2FA) {
         setPending2FA({
           userId: data.userId,
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
         };
       }
       
-      // Caso 2: Login exitoso (con o sin 2FA ya verificado)
+      // Caso 2: Login exitoso
       if (data.token && data.user) {
         setUser(data.user);
         setLoginAt(authService.getLoginAt());
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Verificar código 2FA por separado (usando endpoint específico)
+  // Verificar código 2FA
   const verify2FA = async (userId, twoFactorCode) => {
     try {
       const data = await authService.verify2FA(userId, twoFactorCode);
@@ -90,7 +90,6 @@ export const AuthProvider = ({ children }) => {
   // Verificar 2FA con código de respaldo
   const verify2FAWithBackup = async (email, password, backupCode) => {
     try {
-      // Reutilizar el login con el código de respaldo
       const data = await authService.login(email, password, backupCode);
       
       if (data.token && data.user) {
@@ -108,15 +107,47 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Solicitar recuperación de contraseña
+  const requestPasswordReset = async (email) => {
+    try {
+      const data = await authService.requestPasswordReset(email);
+      return data;
+    } catch (error) {
+      console.error('Error en requestPasswordReset:', error);
+      throw error;
+    }
+  };
+
+  // Restablecer contraseña con token
+  const resetPassword = async (token, newPassword) => {
+    try {
+      const data = await authService.resetPassword(token, newPassword);
+      return data;
+    } catch (error) {
+      console.error('Error en resetPassword:', error);
+      throw error;
+    }
+  };
+
+  // Verificar token de recuperación
+  const verifyResetToken = async (token) => {
+    try {
+      const data = await authService.verifyResetToken(token);
+      return data;
+    } catch (error) {
+      console.error('Error en verifyResetToken:', error);
+      throw error;
+    }
+  };
+
   const logout = async () => {
-    await authService.logout(); // llama al backend → libera la mesa
+    await authService.logout();
     setUser(null);
     setLoginAt(null);
     setPending2FA(null);
     navigate('/');
   };
 
-  // Helpers para leer la mesa desde el user guardado en estado
   const getMesaId    = () => user?.iMesaId || null;
   const mesaNombre   = user?.mesa?.sNombre || (user?.iMesaId ? `Mesa ${user.iMesaId}` : null);
 
@@ -126,6 +157,9 @@ export const AuthProvider = ({ children }) => {
     login,
     verify2FA,
     verify2FAWithBackup,
+    requestPasswordReset,
+    resetPassword,
+    verifyResetToken,
     logout,
     loading,
     getMesaId,
