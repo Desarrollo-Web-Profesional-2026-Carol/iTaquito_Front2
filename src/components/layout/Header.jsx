@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { C, FONT } from "../../styles/designTokens";
+import { Map } from 'lucide-react';
 import {
   LogOut,
   Menu,
@@ -142,6 +143,8 @@ const NAV_CONFIG = {
       { label: "Menú", path: "/menu", Icon: UtensilsCrossed },
       { label: "Usuarios", path: "/users", Icon: Users },
       { label: "Reportes", path: "/reports", Icon: BarChart3 },
+      { label: 'Mapa de sitio', path: '/sitemap', Icon: Map },
+
     ],
   },
   mesa: {

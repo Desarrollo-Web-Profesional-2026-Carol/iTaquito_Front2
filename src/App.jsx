@@ -18,7 +18,7 @@ import AdminUsers from "./modules/admin/pages/AdminUsers";
 import CajeroPanel from "./modules/staff/pages/CajeroPanel";
 import ErrorPage from "./modules/errors/ErrorPage";
 import ResetPassword from "./modules/auth/pages/ResetPassword";
-
+import Sitemap from './modules/admin/pages/Sitemap';
 
 
 const PrivateRoute = ({ children }) => {
@@ -119,7 +119,8 @@ const CajeroRoute = ({ children }) => {
   }
 
   if (!user) return <Navigate to="/login" />;
-  if (user.rol !== "cajero" && user.rol !== "admin") return <Navigate to="/403" replace />; // Cambiado a /403
+  if (user.rol !== "cajero" && user.rol !== "admin")
+    return <Navigate to="/403" replace />; // Cambiado a /403
   return children;
 };
 
@@ -143,6 +144,15 @@ function AppContent() {
         <Route path="/" element={<Home />} />
 
         {/* Rutas protegidas - solo ADMIN */}
+
+        <Route
+          path="/sitemap"
+          element={
+            <AdminRoute>
+              <Sitemap />
+            </AdminRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={
