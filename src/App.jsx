@@ -15,7 +15,9 @@ import MyOrders from "./modules/mesa/pages/MyOrders";
 import MenuMesa from "./modules/mesa/pages/MenuMesa";
 import MenuAdmin from "./modules/admin/pages/MenuAdmin";
 import AdminUsers from "./modules/admin/pages/AdminUsers";
-import CajeroPanel from "./modules/staff/pages/CajeroPanel"; 
+import CajeroPanel from "./modules/staff/pages/CajeroPanel";
+import TaqueroPanel from "./modules/staff/pages/TaqueroPanel";
+import MeseroPedidos from "./modules/staff/pages/MeseroPedidos";
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -119,6 +121,41 @@ const CajeroRoute = ({ children }) => {
   return children;
 };
 
+// Solo cocinero o admin
+const CocineroRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#ECF0F1",
+        }}
+      >
+        <div
+          style={{
+            width: "48px",
+            height: "48px",
+            border: "4px solid #E83E8C",
+            borderTopColor: "transparent",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }}
+        />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" />;
+  if (user.rol !== 'taquero' && user.rol !== 'admin') return <Navigate to="/" />;
+  return children;
+};
+
 // Redirige /menu al componente correcto según rol
 const MenuRouter = () => {
   const { isAdmin } = useAuth();
@@ -218,6 +255,26 @@ function AppContent() {
             <CajeroRoute>
               <CajeroPanel />
             </CajeroRoute>
+          }
+        />
+
+        {/* Nueva ruta para el panel del taquero (cocinero) */}
+        <Route
+          path="/taquero"
+          element={
+            <CocineroRoute>
+              <TaqueroPanel />
+            </CocineroRoute>
+          }
+        />
+
+        {/* Ruta para la vista de pedidos de meseros */}
+        <Route
+          path="/mesero-pedidos"
+          element={
+            <PrivateRoute>
+              <MeseroPedidos />
+            </PrivateRoute>
           }
         />
 

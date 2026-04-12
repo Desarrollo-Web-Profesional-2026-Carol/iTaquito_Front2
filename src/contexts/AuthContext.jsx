@@ -11,22 +11,23 @@ export const useAuth = () => {
 };
 
 const HOME_BY_ROL = {
-  admin:   '/dashboard',
-  mesero:  '/tables',
-  cajero:    '/cajero',
+  admin: '/dashboard',
+  mesero: '/tables',
+  cajero: '/cajero',
   mesa: '/menu',
+  taquero: '/taquero',
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user,    setUser]    = useState(null);
+  const [user, setUser] = useState(null);
   const [loginAt, setLoginAt] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const saved   = authService.getCurrentUser();
+    const saved = authService.getCurrentUser();
     const savedAt = authService.getLoginAt();
-    if (saved)   setUser(saved);
+    if (saved) setUser(saved);
     if (savedAt) setLoginAt(savedAt);
     setLoading(false);
   }, []);
@@ -47,8 +48,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Helpers para leer la mesa desde el user guardado en estado
-  const getMesaId    = () => user?.iMesaId || null;
-  const mesaNombre   = user?.mesa?.sNombre || (user?.iMesaId ? `Mesa ${user.iMesaId}` : null);
+  const getMesaId = () => user?.iMesaId || null;
+  const mesaNombre = user?.mesa?.sNombre || (user?.iMesaId ? `Mesa ${user.iMesaId}` : null);
 
   const value = {
     user,
@@ -58,11 +59,12 @@ export const AuthProvider = ({ children }) => {
     loading,
     getMesaId,
     mesaNombre,
-    iMesaId:   user?.iMesaId || null,
-    isAdmin:   user?.rol === 'admin',
-    isMesero:  user?.rol === 'mesero',
-    isCajero:    user?.rol === 'cajero',
+    iMesaId: user?.iMesaId || null,
+    isAdmin: user?.rol === 'admin',
+    isMesero: user?.rol === 'mesero',
+    isCajero: user?.rol === 'cajero',
     isMesa: user?.rol === 'mesa',
+    isTaquero: user?.rol === 'taquero',
   };
 
   return (

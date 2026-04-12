@@ -290,7 +290,7 @@ const UsuariosModal = ({ isOpen, onClose, onSave, usuario }) => {
     };
     
     loadMesas();
-  }, [isOpen, usuario?.iMesaId]);
+  }, [isOpen, usuario?.iMesaId, usuario?.mesa?.sNombre]);
 
   /* Rellenar form */
   useEffect(() => {
