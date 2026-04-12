@@ -55,6 +55,23 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+const MeseroRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#ECF0F1" }}>
+        <div style={{ width: "48px", height: "48px", border: "4px solid #E83E8C", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" />;
+  if (user.rol !== "mesero" && user.rol !== "admin") return <Navigate to="/403" replace />;
+  return children;
+};
+
 const CajeroRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
@@ -127,10 +144,10 @@ function AppContent() {
         <Route path="/" element={<Home />} />
         <Route path="/sitemap" element={<Sitemap />} />
 
-        {/* Rutas protegidas - solo ADMIN */}
+        {/* Rutas protegidas - solo ADMIN o Staff Autorizado */}
         <Route path="/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
         <Route path="/users" element={<AdminRoute><Usuarios /></AdminRoute>} />
-        <Route path="/tables" element={<AdminRoute><Tables /></AdminRoute>} />
+        <Route path="/tables" element={<MeseroRoute><Tables /></MeseroRoute>} />
         <Route path="/admin-users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
         <Route path="/menu-admin" element={<AdminRoute><MenuAdmin /></AdminRoute>} />
 
