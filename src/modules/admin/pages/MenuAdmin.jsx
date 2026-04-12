@@ -10,6 +10,7 @@ import {
   Pencil, Trash2, Eye, EyeOff, Save, ImagePlus,
   DollarSign, ToggleLeft, ToggleRight, RefreshCw
 } from 'lucide-react';
+import Breadcrumb from '../../../components/layout/Breadcrumb';
 
 /* ─── ADMIN PRODUCT CARD ─────────────────────────────────────── */
 function AdminProductCard({ product, onEdit, onDelete, onToggleDisponible }) {
@@ -347,7 +348,7 @@ const MenuAdmin = () => {
       <Header />
 
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '28px 24px 80px' }}>
-
+<Breadcrumb />
         {/* Título + botón crear */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
           <div>

@@ -12,6 +12,7 @@ import {
   ShieldCheck, ShieldOff, QrCode, Copy, CheckCircle,
   AlertCircle, Lock, KeyRound, Eye, EyeOff, Save,
 } from "lucide-react";
+import Breadcrumb from '../../../components/layout/Breadcrumb';
 
 /* ─── ROLES PARA FILTRO ──────────────────────────────────────── */
 const ROL_CHIPS = [
@@ -515,7 +516,7 @@ const Usuarios = () => {
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: FONT, color: C.textPrimary }}>
       <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "32px 24px" }}>
-
+<Breadcrumb />
         {/* ── HEADER ── */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px", flexWrap: "wrap", gap: "12px" }}>
           <div>

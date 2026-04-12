@@ -11,6 +11,7 @@ import {
   Clock, CheckCircle, ChefHat, Truck, XCircle,
   RefreshCw, MapPin, LogOut, Utensils, Plus
 } from 'lucide-react';
+import Breadcrumb from '../../../components/layout/Breadcrumb';
 
 /* ─── ESTADO CONFIG ──────────────────────────────────────────── */
 const ESTADO = {
@@ -238,6 +239,7 @@ const MyOrders = () => {
       <ClientHeader totalItems={totalItems} onLogout={logout} />
 
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '32px 24px 60px' }}>
+        <Breadcrumb />
 
         {/* Page header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>

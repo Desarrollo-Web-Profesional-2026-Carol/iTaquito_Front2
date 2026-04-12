@@ -14,6 +14,9 @@ import {
   XCircle,
   SlidersHorizontal,
 } from "lucide-react";
+import Breadcrumb from '../../../components/layout/Breadcrumb';
+
+
 /* ─── MINI STAT ──────────────────────────────────────────────── */
 function MiniStat({ label, value, color, Icon }) {
   return (
@@ -238,6 +241,8 @@ const Cocineros = () => {
       <main
         style={{ maxWidth: "1400px", margin: "0 auto", padding: "32px 24px" }}
       >
+                <Breadcrumb />
+
         {/* Header */}
         <div
           style={{

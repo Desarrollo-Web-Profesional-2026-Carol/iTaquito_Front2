@@ -1,22 +1,24 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { C, FONT } from '../../styles/designTokens';
 import {
   Heart, Github, Mail, MapPin, Phone,
-  UtensilsCrossed, ChevronRight
+  UtensilsCrossed, ChevronRight, Map
 } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const navigate = useNavigate();
 
   return (
     <footer style={{
-      background: C.bgAccent,  // Mismo fondo que el Header
+      background: C.bgAccent,
       borderTop: `1px solid ${C.border}`,
       fontFamily: FONT,
       color: C.textPrimary,
       marginTop: 'auto',
     }}>
-      {/* Neon top strip - como en el Header */}
+      {/* Neon top strip */}
       <div style={{
         height: "3px",
         background: `linear-gradient(90deg, ${C.pink}, ${C.orange}, ${C.yellow}, ${C.teal}, ${C.purple})`,
@@ -28,7 +30,6 @@ const Footer = () => {
         margin: '0 auto',
         padding: '48px 24px 32px',
       }}>
-        {/* Grid principal - mismo espaciado que Header */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
@@ -38,15 +39,13 @@ const Footer = () => {
           
           {/* Columna 1: Logo y descripción */}
           <div>
-            <div 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '10px', 
-                marginBottom: '16px',
-                cursor: 'pointer',
-              }}
-            >
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px', 
+              marginBottom: '16px',
+              cursor: 'pointer',
+            }}>
               <div style={{
                 width: "38px", height: "38px", borderRadius: "9px",
                 background: `linear-gradient(135deg, ${C.pink}, ${C.purple})`,
@@ -98,20 +97,13 @@ const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '9px',  // Cuadrado con bordes redondeados como el Header
-                    background: C.bgCard,
-                    border: `1px solid ${C.border}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: C.textSecondary,
-                    transition: 'all 0.2s',
-                    textDecoration: 'none',
+                    width: '36px', height: '36px', borderRadius: '9px',
+                    background: C.bgCard, border: `1px solid ${C.border}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: C.textSecondary, transition: 'all 0.2s', textDecoration: 'none',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = color === C.pink ? `${C.pink}22` : `${C.pink}22`;
+                    e.currentTarget.style.background = `${C.pink}22`;
                     e.currentTarget.style.borderColor = C.pink;
                     e.currentTarget.style.color = C.pink;
                     e.currentTarget.style.transform = 'translateY(-2px)';
@@ -132,12 +124,8 @@ const Footer = () => {
           {/* Columna 2: Enlaces rápidos */}
           <div>
             <h4 style={{
-              color: C.textPrimary,
-              fontSize: '14px',
-              fontWeight: '700',
-              marginBottom: '20px',
-              letterSpacing: '0.5px',
-              textTransform: 'uppercase',
+              color: C.textPrimary, fontSize: '14px', fontWeight: '700',
+              marginBottom: '20px', letterSpacing: '0.5px', textTransform: 'uppercase',
             }}>
               Enlaces rápidos
             </h4>
@@ -152,49 +140,50 @@ const Footer = () => {
                   <a
                     href={link.path}
                     style={{
-                      color: C.textSecondary,
-                      textDecoration: 'none',
-                      fontSize: '13px',
-                      transition: 'color 0.2s',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
+                      color: C.textSecondary, textDecoration: 'none', fontSize: '13px',
+                      transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '6px',
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = C.pink;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = C.textSecondary;
-                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = C.pink; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = C.textSecondary; }}
                   >
                     <ChevronRight size={12} color={C.pink} style={{ opacity: 0.7 }} />
                     {link.label}
                   </a>
                 </li>
               ))}
+
+              {/* ── MAPA DEL SITIO ── */}
+              <li style={{ marginBottom: '12px' }}>
+                <button
+                  onClick={() => navigate('/sitemap')}
+                  style={{
+                    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                    color: C.textSecondary, textDecoration: 'none', fontSize: '13px',
+                    transition: 'color 0.2s', display: 'flex', alignItems: 'center', gap: '6px',
+                    fontFamily: FONT,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = C.pink; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = C.textSecondary; }}
+                >
+                  <Map size={12} color={C.pink} style={{ opacity: 0.7 }} />
+                  Mapa del sitio
+                </button>
+              </li>
             </ul>
           </div>
 
           {/* Columna 3: Contacto */}
           <div>
             <h4 style={{
-              color: C.textPrimary,
-              fontSize: '14px',
-              fontWeight: '700',
-              marginBottom: '20px',
-              letterSpacing: '0.5px',
-              textTransform: 'uppercase',
+              color: C.textPrimary, fontSize: '14px', fontWeight: '700',
+              marginBottom: '20px', letterSpacing: '0.5px', textTransform: 'uppercase',
             }}>
               Contacto
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               <li style={{ 
-                display: 'flex', 
-                alignItems: 'flex-start', 
-                gap: '12px', 
-                marginBottom: '16px',
-                color: C.textSecondary,
-                fontSize: '13px',
+                display: 'flex', alignItems: 'flex-start', gap: '12px', 
+                marginBottom: '16px', color: C.textSecondary, fontSize: '13px',
               }}>
                 <div style={{
                   width: '28px', height: '28px', borderRadius: '7px',
@@ -207,12 +196,8 @@ const Footer = () => {
 ....                </span>
               </li>
               <li style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '12px', 
-                marginBottom: '16px',
-                color: C.textSecondary,
-                fontSize: '13px',
+                display: 'flex', alignItems: 'center', gap: '12px', 
+                marginBottom: '16px', color: C.textSecondary, fontSize: '13px',
               }}>
                 <div style={{
                   width: '28px', height: '28px', borderRadius: '7px',
@@ -224,11 +209,8 @@ const Footer = () => {
                 <span>+52 (00)00000</span>
               </li>
               <li style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '12px',
-                color: C.textSecondary,
-                fontSize: '13px',
+                display: 'flex', alignItems: 'center', gap: '12px',
+                color: C.textSecondary, fontSize: '13px',
               }}>
                 <div style={{
                   width: '28px', height: '28px', borderRadius: '7px',
@@ -245,79 +227,54 @@ const Footer = () => {
           {/* Columna 4: Horarios */}
           <div>
             <h4 style={{
-              color: C.textPrimary,
-              fontSize: '14px',
-              fontWeight: '700',
-              marginBottom: '20px',
-              letterSpacing: '0.5px',
-              textTransform: 'uppercase',
+              color: C.textPrimary, fontSize: '14px', fontWeight: '700',
+              marginBottom: '20px', letterSpacing: '0.5px', textTransform: 'uppercase',
             }}>
               Horarios
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              <li style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                marginBottom: '12px',
-                color: C.textSecondary,
-                fontSize: '13px',
-              }}>
-                <span style={{ color: C.textPrimary, fontWeight: '600' }}>Lun - Jue</span>
-                <span>00:00 - 00:00</span>
-              </li>
-              <li style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                marginBottom: '12px',
-                color: C.textSecondary,
-                fontSize: '13px',
-              }}>
-                <span style={{ color: C.textPrimary, fontWeight: '600' }}>Vie - Sáb</span>
-                <span>00:00 - 00:00</span>
-              </li>
-              <li style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                marginBottom: '12px',
-                color: C.textSecondary,
-                fontSize: '13px',
-              }}>
-                <span style={{ color: C.textPrimary, fontWeight: '600' }}>Domingo</span>
-                <span>00:00 - 00:00</span>
-              </li>
+              {[
+                { day: 'Lun - Jue', hours: '00:00 - 00:00' },
+                { day: 'Vie - Sáb', hours: '00:00 - 00:00' },
+                { day: 'Domingo',   hours: '00:00 - 00:00' },
+              ].map(({ day, hours }) => (
+                <li key={day} style={{ 
+                  display: 'flex', justifyContent: 'space-between',
+                  marginBottom: '12px', color: C.textSecondary, fontSize: '13px',
+                }}>
+                  <span style={{ color: C.textPrimary, fontWeight: '600' }}>{day}</span>
+                  <span>{hours}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        {/* Barra inferior - como en el Header */}
+        {/* Barra inferior */}
         <div style={{
-          borderTop: `1px solid ${C.border}`,
-          paddingTop: '20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
+          borderTop: `1px solid ${C.border}`, paddingTop: '20px',
+          display: 'flex', justifyContent: 'space-between',
+          alignItems: 'center', flexWrap: 'wrap', gap: '16px',
         }}>
           <p style={{
-            color: C.textMuted,
-            fontSize: '12px',
-            margin: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
+            color: C.textMuted, fontSize: '12px', margin: 0,
+            display: 'flex', alignItems: 'center', gap: '6px',
           }}>
             © {currentYear} iTaquito. Todos los derechos reservados.
           </p>
-          <p style={{
-            color: C.textMuted,
-            fontSize: '12px',
-            margin: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}>
-          </p>
+          <button
+            onClick={() => navigate('/sitemap')}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: C.textMuted, fontSize: '12px', fontFamily: FONT,
+              display: 'flex', alignItems: 'center', gap: '5px',
+              transition: 'color 0.2s', padding: 0,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = C.pink; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = C.textMuted; }}
+          >
+            <Map size={12} /> Mapa del sitio
+          </button>
         </div>
       </div>
     </footer>
@@ -325,4 +282,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

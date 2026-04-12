@@ -15,6 +15,7 @@ import {
   LogOut, MapPin, Utensils, ClipboardList, Pencil, Loader,
   CheckCircle, Trash2, ChevronRight,
 } from 'lucide-react';
+import Breadcrumb from '../../../components/layout/Breadcrumb';
 
 /* ─── PAPEL PICADO ───────────────────────────────────────────── */
 const PICADO = [C.pink, C.orange, C.yellow, C.teal, C.purple, C.pinkDim, C.orangeDim, C.tealDim];
@@ -142,12 +143,9 @@ function ProductCard({ product, onAdd }) {
         {product.sDescripcion && (
           <p style={{ margin: 0, color: C.textMuted, fontSize: '12px', lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{product.sDescripcion}</p>
         )}
-        {/* Precio */}
         <div style={{ paddingTop: '10px', borderTop: `1px solid ${C.border}`, marginTop: 'auto' }}>
           <span style={{ color: C.yellow, fontWeight: '800', fontSize: '18px' }}>${parseFloat(product.dPrecio).toFixed(2)}</span>
         </div>
-
-        {/* Controles */}
         {disponible ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '4px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: C.bgAccent, borderRadius: '8px', padding: '4px 6px', border: `1px solid ${C.border}`, flexShrink: 0 }}>
@@ -247,7 +245,6 @@ function PlatesSidebar({ plates, activePlateId, onSelect, onAdd, onRemove, onRen
         borderRadius: '16px',
         overflow: 'hidden',
       }}>
-        {/* Header */}
         <div style={{ padding: '12px 14px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ width: '3px', height: '16px', borderRadius: '2px', background: C.pink, boxShadow: glow(C.pink, '55') }} />
           <span style={{ color: C.textPrimary, fontWeight: '800', fontSize: '13px' }}>Platos</span>
@@ -258,7 +255,6 @@ function PlatesSidebar({ plates, activePlateId, onSelect, onAdd, onRemove, onRen
           }}>{plates.length}</span>
         </div>
 
-        {/* Plates list */}
         <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {plates.map((plate, idx) => {
             const active   = plate.id === activePlateId;
@@ -281,7 +277,6 @@ function PlatesSidebar({ plates, activePlateId, onSelect, onAdd, onRemove, onRen
                 onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {/* Plate icon */}
                   <div style={{
                     width: '34px', height: '34px', borderRadius: '10px', flexShrink: 0,
                     background: active ? `${color}18` : `${C.border}50`,
@@ -321,7 +316,6 @@ function PlatesSidebar({ plates, activePlateId, onSelect, onAdd, onRemove, onRen
                     )}
                   </div>
 
-                  {/* Rename / Remove buttons */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0 }}>
                     {active && renamingId !== plate.id && (
                       <button onClick={e => startRename(e, plate)}
@@ -342,7 +336,6 @@ function PlatesSidebar({ plates, activePlateId, onSelect, onAdd, onRemove, onRen
                   </div>
                 </div>
 
-                {/* Items editables del plato activo */}
                 {active && plate.items.length > 0 && (
                   <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: `1px solid ${C.border}` }}>
                     {plate.items.map(item => (
@@ -350,7 +343,6 @@ function PlatesSidebar({ plates, activePlateId, onSelect, onAdd, onRemove, onRen
                         <span style={{ flex: 1, color: C.textMuted, fontSize: '11px', lineHeight: '1.35', wordBreak: 'break-word' }}>
                           {item.nombre}
                         </span>
-                        {/* Stepper táctil — botones accesibles */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
                           <button onClick={e => { e.stopPropagation(); onAdjustItem(plate.id, item.id, -1); }}
                             style={{ width: '36px', height: '36px', borderRadius: '9px', border: `1.5px solid ${C.border}`, background: C.bg, color: C.textSecondary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, transition: 'all 0.12s', flexShrink: 0 }}
@@ -380,7 +372,6 @@ function PlatesSidebar({ plates, activePlateId, onSelect, onAdd, onRemove, onRen
             );
           })}
 
-          {/* Add new plate */}
           <button
             onClick={onAdd}
             style={{
@@ -398,7 +389,6 @@ function PlatesSidebar({ plates, activePlateId, onSelect, onAdd, onRemove, onRen
           </button>
         </div>
 
-        {/* Footer: total */}
         {totalGlobal > 0 && (
           <div style={{ padding: '10px 14px', borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ color: C.textMuted, fontSize: '11px', fontWeight: '700' }}>Total carrito</span>
@@ -423,10 +413,14 @@ const MenuMesa = () => {
     adjustItemInPlate, removeItemFromPlate, clearAllPlates,
   } = useCart();
 
-  const [showOrderModal, setShowOrderModal] = useState(false);
-  const [orderingNow,    setOrderingNow]    = useState(false);
-  const [orderSuccess,   setOrderSuccess]   = useState(false);
-  const [orderError,     setOrderError]     = useState('');
+  const [showOrderModal,  setShowOrderModal]  = useState(false);
+  const [orderingNow,     setOrderingNow]     = useState(false);
+  const [orderSuccess,    setOrderSuccess]    = useState(false);
+  const [orderError,      setOrderError]      = useState('');
+
+  // ── NUEVO: modal de confirmación de logout ──
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loggingOut,      setLoggingOut]      = useState(false);
 
   const [products,    setProducts]    = useState([]);
   const [categories,  setCategories]  = useState([]);
@@ -438,10 +432,10 @@ const MenuMesa = () => {
   const [orden,       setOrden]       = useState('');
   const [searchFocus, setSearchFocus] = useState(false);
 
-  const [mesaEstado, setMesaEstado] = useState(null);
+  const [mesaEstado,    setMesaEstado]    = useState(null);
   const [animatingStart, setAnimatingStart] = useState(false);
-  const [animatingEnd, setAnimatingEnd]   = useState(false);
-  const [showPayModal, setShowPayModal]   = useState(false);
+  const [animatingEnd,   setAnimatingEnd]   = useState(false);
+  const [showPayModal,   setShowPayModal]   = useState(false);
 
   const { ejecutar: ejecutarPedirCuenta, loading: payLoading, error: payError, clearError: clearPayError } = usePedirCuenta({
     iMesaId: user?.iMesaId,
@@ -453,16 +447,16 @@ const MenuMesa = () => {
     }, []),
   });
 
-  const handleAbrirPayModal   = () => { clearPayError(); setShowPayModal(true); };
-  const handleCerrarPayModal  = () => { if (!payLoading) setShowPayModal(false); };
-  const handleConfirmarPago   = async () => {
+  const handleAbrirPayModal  = () => { clearPayError(); setShowPayModal(true); };
+  const handleCerrarPayModal = () => { if (!payLoading) setShowPayModal(false); };
+  const handleConfirmarPago  = async () => {
     setAnimatingEnd(true);
     const ok = await ejecutarPedirCuenta();
     if (ok) setShowPayModal(false);
     else setAnimatingEnd(false);
   };
 
-  // Polling para vigilar el estado de la mesa (Ej: Liberación del cajero)
+  // Polling estado mesa
   useEffect(() => {
     if (!user?.iMesaId) return;
     const fetchMesa = async () => {
@@ -470,7 +464,6 @@ const MenuMesa = () => {
         const res = await tablesService.getById(user.iMesaId);
         if (res.success && res.data) {
           setMesaEstado(res.data.sEstado);
-          // Si el cajero la puso en "disponible", limpiamos el token de sesión
           if (res.data.sEstado === 'disponible') {
             localStorage.removeItem('mesaSessionToken');
           }
@@ -479,9 +472,8 @@ const MenuMesa = () => {
         console.error('Error fetching mesa:', err);
       }
     };
-    
     fetchMesa();
-    const interval = setInterval(fetchMesa, 4000); // 4 segundos de polling
+    const interval = setInterval(fetchMesa, 4000);
     return () => clearInterval(interval);
   }, [user?.iMesaId]);
 
@@ -491,7 +483,6 @@ const MenuMesa = () => {
       const newToken = crypto.randomUUID();
       localStorage.setItem('mesaSessionToken', newToken);
       await tablesService.changeStatus(user.iMesaId, 'ocupada');
-      
       setTimeout(() => {
         setMesaEstado('ocupada');
         setAnimatingStart(false);
@@ -503,7 +494,23 @@ const MenuMesa = () => {
     }
   };
 
-  // handlePedirCuenta reemplazado por el modal (ver showPayModal + usePedirCuenta arriba)
+  // ── NUEVO: abre modal antes de cerrar sesión ──
+  const handleLogoutRequest = () => setShowLogoutModal(true);
+
+  // ── NUEVO: ejecuta el logout real tras confirmar ──
+  const handleLogoutConfirm = async () => {
+    setLoggingOut(true);
+    try {
+      if (user?.iMesaId && mesaEstado === 'ocupada') {
+        await tablesService.changeStatus(user.iMesaId, 'disponible');
+        localStorage.removeItem('mesaSessionToken');
+      }
+    } catch { /* silently fail */ }
+    clearAllPlates();
+    logout();
+    setLoggingOut(false);
+    setShowLogoutModal(false);
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -513,7 +520,6 @@ const MenuMesa = () => {
           productsService.getAll(),
           categoriesService.getAll(),
         ]);
-        // Mesa solo ve productos activos
         setProducts(prods.filter(p => p.bActivo));
         setCategories(cats);
       } catch {
@@ -537,17 +543,6 @@ const MenuMesa = () => {
 
   const handleAdd = (product, qty = 1) => {
     addItemQty({ id: product.id, nombre: product.sNombre, precio: parseFloat(product.dPrecio), imagen: product.sImagenUrl || null }, qty);
-  };
-
-  const handleLogout = async () => {
-    try {
-      if (user?.iMesaId && mesaEstado === 'ocupada') {
-        await tablesService.changeStatus(user.iMesaId, 'disponible');
-        localStorage.removeItem('mesaSessionToken');
-      }
-    } catch { /* silently fail */ }
-    clearAllPlates();
-    logout();
   };
 
   const handleQuickOrder = async () => {
@@ -632,9 +627,56 @@ const MenuMesa = () => {
         </div>
       )}
 
-      <ClientHeader user={user} totalItems={totalItems} onLogout={handleLogout} />
+      {/* ── NUEVO: modal de confirmación de cerrar sesión ── */}
+      {showLogoutModal && (
+        <div
+          onClick={() => { if (!loggingOut) setShowLogoutModal(false); }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: FONT }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: C.bgCard, border: `1.5px solid ${C.border}`, borderRadius: '20px', padding: '28px 24px', width: '100%', maxWidth: '400px', boxShadow: '0 24px 64px rgba(0,0,0,0.55)', animation: 'slideUp 0.22s ease' }}
+          >
+            {/* Icono */}
+            <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: `${C.pink}15`, border: `1.5px solid ${C.pink}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: glow(C.pink, '22') }}>
+              <LogOut size={26} color={C.pink} />
+            </div>
 
-      {/* ─── BARRA DE PLATOS eliminada del top, ahora es sidebar ─── */}
+            <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: '800', color: C.textPrimary, textAlign: 'center' }}>
+              ¿Cerrar sesión?
+            </h3>
+            <p style={{ margin: '0 0 24px', color: C.textSecondary, fontSize: '13px', textAlign: 'center', lineHeight: 1.6 }}>
+              {mesaEstado === 'ocupada'
+                ? 'La mesa quedará disponible y se perderá el carrito actual.'
+                : 'Se cerrará tu sesión y se perderá el carrito actual.'}
+            </p>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                disabled={loggingOut}
+                style={{ flex: 1, background: 'transparent', border: `1.5px solid ${C.border}`, borderRadius: '10px', padding: '11px', color: C.textSecondary, fontFamily: FONT, fontWeight: '700', fontSize: '14px', cursor: loggingOut ? 'not-allowed' : 'pointer', transition: 'all 0.18s' }}
+                onMouseEnter={e => { if (!loggingOut) { e.currentTarget.style.borderColor = C.textSecondary; e.currentTarget.style.color = C.textPrimary; } }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSecondary; }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleLogoutConfirm}
+                disabled={loggingOut}
+                style={{ flex: 1, background: loggingOut ? C.bgAccent : C.pink, border: `1.5px solid ${loggingOut ? C.border : C.pink}`, borderRadius: '10px', padding: '11px', color: loggingOut ? C.textMuted : '#fff', fontFamily: FONT, fontWeight: '800', fontSize: '14px', cursor: loggingOut ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: loggingOut ? 'none' : glow(C.pink, '44'), transition: 'all 0.2s' }}
+              >
+                {loggingOut
+                  ? <><Loader size={14} style={{ animation: 'spin 0.8s linear infinite' }} /> Saliendo...</>
+                  : <><LogOut size={14} /> Sí, salir</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── El header ahora llama a handleLogoutRequest en lugar de handleLogout ── */}
+      <ClientHeader user={user} totalItems={totalItems} onLogout={handleLogoutRequest} />
 
       <PapelPicado />
 
@@ -653,8 +695,7 @@ const MenuMesa = () => {
 
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px 24px 120px' }}>
         <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-
-          {/* ─── SIDEBAR DE PLATOS ─── */}
+          <Breadcrumb />
           {mesaEstado === 'ocupada' && (
             <PlatesSidebar
               plates={plates}
@@ -668,82 +709,76 @@ const MenuMesa = () => {
             />
           )}
 
-          {/* ─── CONTENIDO PRINCIPAL ─── */}
           <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Filtros */}
-        <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '16px 18px', marginBottom: '24px', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-          <SlidersHorizontal size={15} color={C.textMuted} style={{ flexShrink: 0 }} />
+            <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '16px 18px', marginBottom: '24px', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+              <SlidersHorizontal size={15} color={C.textMuted} style={{ flexShrink: 0 }} />
 
-          <div style={{ position: 'relative', flex: '1 1 200px', display: 'flex', alignItems: 'center' }}>
-            <Search size={14} color={searchFocus ? C.pink : C.textMuted} style={{ position: 'absolute', left: '10px', pointerEvents: 'none', transition: 'color 0.18s' }} />
-            <input value={search} onChange={e => setSearch(e.target.value)}
-              onFocus={() => setSearchFocus(true)} onBlur={() => setSearchFocus(false)}
-              placeholder="Buscar producto..."
-              style={{ width: '100%', boxSizing: 'border-box', background: C.bg, border: `1.5px solid ${searchFocus ? C.pink : C.border}`, borderRadius: '9px', padding: '8px 32px 8px 30px', color: C.textPrimary, fontFamily: FONT, fontWeight: '600', fontSize: '13px', outline: 'none', transition: 'border-color 0.18s' }} />
-            {search && <button onClick={() => setSearch('')} style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, display: 'flex', padding: '2px' }}><X size={13} /></button>}
-          </div>
+              <div style={{ position: 'relative', flex: '1 1 200px', display: 'flex', alignItems: 'center' }}>
+                <Search size={14} color={searchFocus ? C.pink : C.textMuted} style={{ position: 'absolute', left: '10px', pointerEvents: 'none', transition: 'color 0.18s' }} />
+                <input value={search} onChange={e => setSearch(e.target.value)}
+                  onFocus={() => setSearchFocus(true)} onBlur={() => setSearchFocus(false)}
+                  placeholder="Buscar producto..."
+                  style={{ width: '100%', boxSizing: 'border-box', background: C.bg, border: `1.5px solid ${searchFocus ? C.pink : C.border}`, borderRadius: '9px', padding: '8px 32px 8px 30px', color: C.textPrimary, fontFamily: FONT, fontWeight: '600', fontSize: '13px', outline: 'none', transition: 'border-color 0.18s' }} />
+                {search && <button onClick={() => setSearch('')} style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, display: 'flex', padding: '2px' }}><X size={13} /></button>}
+              </div>
 
-          <select value={catId} onChange={e => setCatId(e.target.value)}
-            style={{ background: C.bg, border: `1.5px solid ${catId ? C.pink : C.border}`, borderRadius: '9px', padding: '8px 32px 8px 12px', color: catId ? C.textPrimary : C.textMuted, fontFamily: FONT, fontWeight: '600', fontSize: '13px', outline: 'none', cursor: 'pointer', appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235C5040' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'calc(100% - 10px) center', minWidth: '150px' }}>
-            <option value="">Todas las categorías</option>
-            {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.sNombre}</option>)}
-          </select>
+              <select value={catId} onChange={e => setCatId(e.target.value)}
+                style={{ background: C.bg, border: `1.5px solid ${catId ? C.pink : C.border}`, borderRadius: '9px', padding: '8px 32px 8px 12px', color: catId ? C.textPrimary : C.textMuted, fontFamily: FONT, fontWeight: '600', fontSize: '13px', outline: 'none', cursor: 'pointer', appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235C5040' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'calc(100% - 10px) center', minWidth: '150px' }}>
+                <option value="">Todas las categorías</option>
+                {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.sNombre}</option>)}
+              </select>
 
-          <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-            {[{ val: 'asc', Icon: ChevronUp, label: 'Menor precio' }, { val: 'desc', Icon: ChevronDown, label: 'Mayor precio' }].map(({ val, Icon, label }) => (
-              <button key={val} onClick={() => setOrden(o => o === val ? '' : val)} title={label}
-                style={{ background: orden === val ? `${C.teal}22` : 'transparent', border: `1.5px solid ${orden === val ? C.teal : C.border}`, borderRadius: '9px', padding: '7px 10px', color: orden === val ? C.teal : C.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: FONT, fontWeight: '700', fontSize: '12px', transition: 'all 0.18s' }}>
-                <Icon size={13} /> Precio
-              </button>
-            ))}
-          </div>
+              <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                {[{ val: 'asc', Icon: ChevronUp, label: 'Menor precio' }, { val: 'desc', Icon: ChevronDown, label: 'Mayor precio' }].map(({ val, Icon, label }) => (
+                  <button key={val} onClick={() => setOrden(o => o === val ? '' : val)} title={label}
+                    style={{ background: orden === val ? `${C.teal}22` : 'transparent', border: `1.5px solid ${orden === val ? C.teal : C.border}`, borderRadius: '9px', padding: '7px 10px', color: orden === val ? C.teal : C.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: FONT, fontWeight: '700', fontSize: '12px', transition: 'all 0.18s' }}>
+                    <Icon size={13} /> Precio
+                  </button>
+                ))}
+              </div>
 
-
-          {hasFilters && (
-            <button onClick={clearFilters}
-              style={{ background: `${C.pink}12`, border: `1.5px solid ${C.pink}44`, borderRadius: '9px', padding: '7px 12px', color: C.pink, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
-              onMouseEnter={e => e.currentTarget.style.background = `${C.pink}22`}
-              onMouseLeave={e => e.currentTarget.style.background = `${C.pink}12`}>
-              <X size={12} /> Limpiar
-            </button>
-          )}
-        </div>
-
-        {/* Productos */}
-        {error ? (
-          <div style={{ background: `${C.pink}12`, border: `1px solid ${C.pink}44`, borderRadius: '12px', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '10px', color: C.pink, fontSize: '14px', fontWeight: '600' }}>
-            <AlertCircle size={18} /> {error}
-          </div>
-        ) : loading ? (
-          <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-            <div style={{ display: 'inline-block', width: '44px', height: '44px', border: `3px solid ${C.border}`, borderTopColor: C.pink, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            <p style={{ marginTop: '16px', color: C.textMuted, fontSize: '14px' }}>Cargando menú...</p>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '64px 24px' }}>
-            <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: `${C.pink}12`, border: `1.5px solid ${C.pink}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-              <UtensilsCrossed size={28} color={C.pink} />
+              {hasFilters && (
+                <button onClick={clearFilters}
+                  style={{ background: `${C.pink}12`, border: `1.5px solid ${C.pink}44`, borderRadius: '9px', padding: '7px 12px', color: C.pink, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+                  onMouseEnter={e => e.currentTarget.style.background = `${C.pink}22`}
+                  onMouseLeave={e => e.currentTarget.style.background = `${C.pink}12`}>
+                  <X size={12} /> Limpiar
+                </button>
+              )}
             </div>
-            <h3 style={{ color: C.textPrimary, margin: '0 0 8px', fontWeight: '800' }}>Sin resultados</h3>
-            <p style={{ color: C.textSecondary, fontSize: '14px', margin: '0 0 20px' }}>Prueba con otros filtros</p>
-            <button onClick={clearFilters} style={{ background: C.pink, color: '#fff', border: 'none', borderRadius: '9px', padding: '10px 22px', fontFamily: FONT, fontWeight: '700', fontSize: '13px', cursor: 'pointer', boxShadow: glow(C.pink) }}>
-              Ver todo el menú
-            </button>
+
+            {error ? (
+              <div style={{ background: `${C.pink}12`, border: `1px solid ${C.pink}44`, borderRadius: '12px', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '10px', color: C.pink, fontSize: '14px', fontWeight: '600' }}>
+                <AlertCircle size={18} /> {error}
+              </div>
+            ) : loading ? (
+              <div style={{ textAlign: 'center', padding: '80px 24px' }}>
+                <div style={{ display: 'inline-block', width: '44px', height: '44px', border: `3px solid ${C.border}`, borderTopColor: C.pink, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                <p style={{ marginTop: '16px', color: C.textMuted, fontSize: '14px' }}>Cargando menú...</p>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '64px 24px' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: `${C.pink}12`, border: `1.5px solid ${C.pink}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <UtensilsCrossed size={28} color={C.pink} />
+                </div>
+                <h3 style={{ color: C.textPrimary, margin: '0 0 8px', fontWeight: '800' }}>Sin resultados</h3>
+                <p style={{ color: C.textSecondary, fontSize: '14px', margin: '0 0 20px' }}>Prueba con otros filtros</p>
+                <button onClick={clearFilters} style={{ background: C.pink, color: '#fff', border: 'none', borderRadius: '9px', padding: '10px 22px', fontFamily: FONT, fontWeight: '700', fontSize: '13px', cursor: 'pointer', boxShadow: glow(C.pink) }}>
+                  Ver todo el menú
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
+                {filtered.map(p => <ProductCard key={p.id} product={p} onAdd={handleAdd} />)}
+              </div>
+            )}
           </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
-            {filtered.map(p => <ProductCard key={p.id} product={p} onAdd={handleAdd} />)}
-          </div>
-        )}
-      </div>{/* end col principal */}
-        </div>{/* end flex row */}
+        </div>
       </main>
 
-      {/* CartFab → abre confirmación directa sin navegar */}
       <CartFab totalItems={totalItems} totalPrecio={totalPrecio} activePlateLabel={activePlate?.label}
         onClick={() => { setOrderError(''); setShowOrderModal(true); }} />
 
-      {/* PayFab siempre visible cuando mesa ocupada */}
       {(mesaEstado === 'ocupada' && !animatingEnd && !animatingStart) && (
         <PayFab onClick={handleAbrirPayModal} />
       )}
@@ -811,6 +846,7 @@ const MenuMesa = () => {
         loading={payLoading}
         error={payError}
       />
+
       <style>{`
         @keyframes spin      { to { transform: rotate(360deg); } }
         @keyframes fadeInOut { 0%{opacity:0}20%{opacity:1}80%{opacity:1}100%{opacity:0} }
@@ -825,4 +861,3 @@ const MenuMesa = () => {
 };
 
 export default MenuMesa;
-
