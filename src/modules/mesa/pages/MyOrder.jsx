@@ -11,6 +11,7 @@ import {
   ChevronRight, CheckCircle, Receipt, AlertCircle,
   Loader, LogOut, MapPin, Utensils, ClipboardList, Pencil, X,
 } from 'lucide-react';
+import Breadcrumb from '../../../components/layout/Breadcrumb';
 
 /* ─── PAPEL PICADO ───────────────────────────────────────────── */
 const PICADO = [C.pink, C.orange, C.yellow, C.teal, C.purple, C.pinkDim, C.orangeDim, C.tealDim];
@@ -316,6 +317,7 @@ const MyOrder = () => {
       <ClientHeader totalItems={totalItems} onLogout={logout} />
 
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '28px 24px 140px' }}>
+        <Breadcrumb />
         {/* Page title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
           <div style={{ width: '4px', height: '26px', borderRadius: '2px', background: C.pink, boxShadow: glow(C.pink) }} />

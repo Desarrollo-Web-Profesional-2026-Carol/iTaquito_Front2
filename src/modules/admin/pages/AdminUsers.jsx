@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { usersService } from '../../../services/user';
 import { C, FONT, glow } from '../../../styles/designTokens';
+import ConfirmModal from '../../../components/common/ConfirmModal';
+import Breadcrumb from '../../../components/layout/Breadcrumb';
+
 import {
-  Users, UserPlus, Pencil, Trash2, Search, X,
+  Users, Pencil, Trash2, Search, X,
   AlertCircle, Save, Eye, EyeOff,
   ShieldCheck, Coffee, CreditCard, User,
   MapPin, Filter, KeyRound, Mail, BadgeCheck,
@@ -13,10 +15,10 @@ import {
 
 /* ─── ROL CONFIG ─────────────────────────────────────────────── */
 const ROLES = {
-  admin:   { label: 'Admin',   color: C.pink,   Icon: ShieldCheck },
-  mesero:  { label: 'Mesero',  color: C.orange,  Icon: Coffee      },
-  caja:    { label: 'Caja',    color: C.yellow,  Icon: CreditCard  },
-  mesa: { label: 'Mesa', color: C.purple,  Icon: User        },
+  admin:  { label: 'Admin',  color: C.pink,   Icon: ShieldCheck },
+  mesero: { label: 'Mesero', color: C.orange,  Icon: Coffee      },
+  caja:   { label: 'Caja',   color: C.yellow,  Icon: CreditCard  },
+  mesa:   { label: 'Mesa',   color: C.purple,  Icon: User        },
 };
 
 /* ─── ROL BADGE ──────────────────────────────────────────────── */
@@ -32,20 +34,14 @@ function RolBadge({ rol }) {
 /* ─── USER CARD ──────────────────────────────────────────────── */
 function UserCard({ user, onEdit, onDelete, currentUserId }) {
   const [hov, setHov] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const isSelf = user.id === currentUserId;
   const cfg = ROLES[user.rol] || ROLES.mesa;
-
-  const handleDelete = () => {
-    if (confirmDelete) onDelete(user.id);
-    else { setConfirmDelete(true); setTimeout(() => setConfirmDelete(false), 2500); }
-  };
 
   return (
     <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{ background: hov ? C.bgCardHov : C.bgCard, border: `1.5px solid ${hov ? cfg.color : C.border}`, borderRadius: '16px', overflow: 'hidden', transition: 'all 0.22s ease', transform: hov ? 'translateY(-3px)' : 'translateY(0)', boxShadow: hov ? `0 12px 28px rgba(0,0,0,0.3), ${glow(cfg.color, '15')}` : '0 2px 8px rgba(0,0,0,0.2)' }}>
 
-      <div style={{ height: '4px', background: cfg.color, boxShadow: 'none' }} />
+      <div style={{ height: '4px', background: cfg.color }} />
 
       <div style={{ padding: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
@@ -84,9 +80,13 @@ function UserCard({ user, onEdit, onDelete, currentUserId }) {
             onMouseLeave={e => { e.currentTarget.style.background = `${C.teal}15`; e.currentTarget.style.borderColor = `${C.teal}44`; }}>
             <Pencil size={12} /> Editar
           </button>
-          <button onClick={handleDelete} disabled={isSelf}
-            title={isSelf ? 'No puedes eliminar tu propia cuenta' : confirmDelete ? 'Confirmar eliminación' : 'Eliminar'}
-            style={{ background: confirmDelete ? `${C.pink}28` : `${C.pink}15`, border: `1px solid ${confirmDelete ? C.pink : C.pink + '44'}`, borderRadius: '8px', padding: '8px 12px', color: isSelf ? C.textMuted : C.pink, cursor: isSelf ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isSelf ? 0.4 : 1, transition: 'all 0.15s' }}>
+          <button
+            onClick={() => !isSelf && onDelete(user.id)}
+            disabled={isSelf}
+            title={isSelf ? 'No puedes eliminar tu propia cuenta' : 'Eliminar usuario'}
+            style={{ background: `${C.pink}15`, border: `1px solid ${C.pink}44`, borderRadius: '8px', padding: '8px 12px', color: isSelf ? C.textMuted : C.pink, cursor: isSelf ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isSelf ? 0.4 : 1, transition: 'all 0.15s' }}
+            onMouseEnter={e => { if (!isSelf) { e.currentTarget.style.background = `${C.pink}28`; e.currentTarget.style.borderColor = C.pink; } }}
+            onMouseLeave={e => { e.currentTarget.style.background = `${C.pink}15`; e.currentTarget.style.borderColor = `${C.pink}44`; }}>
             <Trash2 size={13} />
           </button>
         </div>
@@ -116,9 +116,9 @@ function UserModal({ user, mesasDisponibles, onSave, onClose }) {
   };
 
   const handleSave = async () => {
-    if (!form.nombre.trim())                      return setError('El nombre es requerido.');
-    if (!form.email.trim())                       return setError('El email es requerido.');
-    if (!isEdit && !form.password.trim())         return setError('La contraseña es requerida.');
+    if (!form.nombre.trim())                   return setError('El nombre es requerido.');
+    if (!form.email.trim())                    return setError('El email es requerido.');
+    if (!isEdit && !form.password.trim())      return setError('La contraseña es requerida.');
     if (form.rol === 'mesa' && !form.iMesaId)  return setError('Debes asignar una mesa al cliente.');
 
     setSaving(true); setError('');
@@ -172,7 +172,6 @@ function UserModal({ user, mesasDisponibles, onSave, onClose }) {
         </div>
 
         <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-
           <div>
             <label style={lbl}>Nombre *</label>
             <div style={{ position: 'relative' }}>
@@ -277,17 +276,17 @@ const AdminUsers = () => {
   const [refreshing,       setRefreshing]       = useState(false);
   const [error,            setError]            = useState('');
   const [search,           setSearch]           = useState('');
-  const [searchInput,      setSearchInput]      = useState(''); // valor del input (live)
+  const [searchInput,      setSearchInput]      = useState('');
   const [rolFilter,        setRolFilter]        = useState('');
   const [searchFocus,      setSearchFocus]      = useState(false);
   const [modal,            setModal]            = useState(null);
+  const [confirmModal,     setConfirmModal]     = useState({ open: false, id: null, nombre: '' });
 
   // ── Carga de datos ────────────────────────────────────────────
   const load = useCallback(async (silent = false) => {
     try {
       if (!silent) setLoading(true);
       else setRefreshing(true);
-
       const [usrs, mesas] = await Promise.all([
         usersService.getAll(),
         usersService.getMesasDisponibles(),
@@ -305,7 +304,7 @@ const AdminUsers = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  // ── Debounce del buscador — 300ms ────────────────────────────
+  // ── Debounce del buscador ────────────────────────────────────
   useEffect(() => {
     const t = setTimeout(() => setSearch(searchInput), 300);
     return () => clearTimeout(t);
@@ -329,19 +328,23 @@ const AdminUsers = () => {
   const handleSave = async (payload, id) => {
     if (id) await usersService.update(id, payload);
     else    await usersService.create(payload);
-    // Recarga silenciosa + limpia búsqueda para que el nuevo usuario aparezca
-    setSearchInput('');
-    setSearch('');
-    setRolFilter('');
+    setSearchInput(''); setSearch(''); setRolFilter('');
     await load(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
+    const user = users.find(u => u.id === id);
+    setConfirmModal({ open: true, id, nombre: user?.nombre || 'este usuario' });
+  };
+
+  const confirmDelete = async () => {
     try {
-      await usersService.delete(id);
+      await usersService.delete(confirmModal.id);
       await load(true);
     } catch (e) {
-      alert(e.response?.data?.message || 'Error al eliminar.');
+      setError(e.response?.data?.message || 'Error al eliminar.');
+    } finally {
+      setConfirmModal({ open: false, id: null, nombre: '' });
     }
   };
 
@@ -357,6 +360,7 @@ const AdminUsers = () => {
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT, color: C.textPrimary }}>
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '28px 24px 80px' }}>
+        <Breadcrumb />
 
         {/* Título */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
@@ -376,7 +380,6 @@ const AdminUsers = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {/* Botón refresh manual */}
             <button onClick={() => load(true)} disabled={refreshing}
               style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '10px', padding: '10px', color: C.textSecondary, cursor: refreshing ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}
               title="Actualizar lista"
@@ -384,7 +387,6 @@ const AdminUsers = () => {
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSecondary; }}>
               <RefreshCw size={15} style={{ animation: refreshing ? 'spin 0.8s linear infinite' : 'none' }} />
             </button>
-
             <button onClick={() => setModal('create')}
               style={{ background: C.purple, color: '#fff', border: 'none', borderRadius: '12px', padding: '12px 24px', fontFamily: FONT, fontWeight: '800', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: glow(C.purple, '55'), transition: 'transform 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
@@ -397,22 +399,12 @@ const AdminUsers = () => {
         {/* Filtros */}
         <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '14px 18px', marginBottom: '24px', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
           <Filter size={15} color={C.textMuted} style={{ flexShrink: 0 }} />
-
-          {/* Buscador con debounce */}
           <div style={{ position: 'relative', flex: '1 1 220px', display: 'flex', alignItems: 'center' }}>
-            <Search size={14} color={searchFocus ? C.purple : C.textMuted}
-              style={{ position: 'absolute', left: '10px', pointerEvents: 'none', transition: 'color 0.18s' }} />
-            <input
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              onFocus={() => setSearchFocus(true)}
-              onBlur={() => setSearchFocus(false)}
+            <Search size={14} color={searchFocus ? C.purple : C.textMuted} style={{ position: 'absolute', left: '10px', pointerEvents: 'none', transition: 'color 0.18s' }} />
+            <input value={searchInput} onChange={e => setSearchInput(e.target.value)}
+              onFocus={() => setSearchFocus(true)} onBlur={() => setSearchFocus(false)}
               placeholder="Buscar por nombre o email..."
               style={{ width: '100%', boxSizing: 'border-box', background: C.bg, border: `1.5px solid ${searchFocus ? C.purple : C.border}`, borderRadius: '9px', padding: '8px 32px 8px 30px', color: C.textPrimary, fontFamily: FONT, fontWeight: '600', fontSize: '13px', outline: 'none', transition: 'border-color 0.18s' }} />
-            {/* Indicador de que está filtrando */}
-            {searchInput && searchInput !== search && (
-              <div style={{ position: 'absolute', right: '30px', width: '6px', height: '6px', borderRadius: '50%', background: C.purple, animation: 'pulse 0.8s ease infinite' }} />
-            )}
             {searchInput && (
               <button onClick={() => { setSearchInput(''); setSearch(''); }}
                 style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, display: 'flex', padding: '2px' }}>
@@ -420,8 +412,6 @@ const AdminUsers = () => {
               </button>
             )}
           </div>
-
-          {/* Filtro rol */}
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {Object.entries(ROLES).map(([key, cfg]) => (
               <button key={key} onClick={() => setRolFilter(r => r === key ? '' : key)}
@@ -435,7 +425,6 @@ const AdminUsers = () => {
               </button>
             ))}
           </div>
-
           {hasFilters && (
             <button onClick={clearFilters}
               style={{ background: `${C.pink}12`, border: `1.5px solid ${C.pink}44`, borderRadius: '9px', padding: '7px 12px', color: C.pink, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
@@ -444,8 +433,6 @@ const AdminUsers = () => {
               <X size={12} /> Limpiar
             </button>
           )}
-
-          {/* Contador resultados */}
           {(search || rolFilter) && (
             <span style={{ color: C.textMuted, fontSize: '12px', marginLeft: 'auto', flexShrink: 0 }}>
               {filtered.length} resultado{filtered.length !== 1 ? 's' : ''}
@@ -489,6 +476,7 @@ const AdminUsers = () => {
         )}
       </main>
 
+      {/* Modal de usuario */}
       {modal && (
         <UserModal
           user={modal === 'create' ? null : modal}
@@ -496,6 +484,15 @@ const AdminUsers = () => {
           onSave={handleSave}
           onClose={() => setModal(null)} />
       )}
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmModal
+        isOpen={confirmModal.open}
+        title="¿Eliminar usuario?"
+        message={`¿Estás seguro que deseas eliminar a ${confirmModal.nombre}? Esta acción no se puede deshacer.`}
+        onConfirm={confirmDelete}
+        onClose={() => setConfirmModal({ open: false, id: null, nombre: '' })}
+      />
 
       <style>{`
         @keyframes spin  { to { transform: rotate(360deg); } }
@@ -506,5 +503,3 @@ const AdminUsers = () => {
 };
 
 export default AdminUsers;
-
-

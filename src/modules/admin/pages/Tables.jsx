@@ -12,6 +12,7 @@ import {
   CheckCircle, XCircle, Clock, AlertCircle,
   Search, SlidersHorizontal, ClipboardList
 } from 'lucide-react';
+import Breadcrumb from '../../../components/layout/Breadcrumb';
 
 /* ─── STAT MINI CARD ─────────────────────────────────────────── */
 function MiniStat({ label, value, color, Icon }) {
@@ -156,6 +157,8 @@ const Tables = () => {
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: FONT, color: C.textPrimary }}>
       <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "32px 24px" }}>
+
+        <Breadcrumb />
 
         {/* ── PAGE HEADER ── */}
         <div style={{
@@ -307,5 +310,3 @@ const Tables = () => {
 };
 
 export default Tables;
-
-

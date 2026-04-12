@@ -10,6 +10,7 @@ import {
   History, Receipt, CalendarDays, LogOut, Music, TrendingUp,
   Sparkles, ClipboardList, Bell,
 } from 'lucide-react';
+import Breadcrumb from '../../../components/layout/Breadcrumb';
 
 /* ─── HELPERS ────────────────────────────────────────────────── */
 const ESTADO_MAP = {
@@ -1131,6 +1132,7 @@ const CajeroPanel = () => {
       <PapelPicado flip />
 
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 20px 80px' }}>
+        <Breadcrumb />
 
         {activeTab === 'cajero' ? (
           <>

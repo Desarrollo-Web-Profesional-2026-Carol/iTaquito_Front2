@@ -10,16 +10,12 @@ import {
   Pencil, Trash2, Eye, EyeOff, Save, ImagePlus,
   DollarSign, ToggleLeft, ToggleRight, RefreshCw
 } from 'lucide-react';
+import Breadcrumb from '../../../components/layout/Breadcrumb';
+import ConfirmModal from '../../../components/common/ConfirmModal';
 
-/* ─── ADMIN PRODUCT CARD ─────────────────────────────────────── */
+/* ─── ADMIN PRODUCT CARD ─────────────────────────────────────────────────── */
 function AdminProductCard({ product, onEdit, onDelete, onToggleDisponible }) {
   const [hov, setHov] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-
-  const handleDelete = () => {
-    if (confirmDelete) onDelete(product.id);
-    else { setConfirmDelete(true); setTimeout(() => setConfirmDelete(false), 2500); }
-  };
 
   return (
     <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
@@ -71,9 +67,11 @@ function AdminProductCard({ product, onEdit, onDelete, onToggleDisponible }) {
             {product.bDisponible ? <EyeOff size={12} /> : <Eye size={12} />}
             {product.bDisponible ? 'Ocultar' : 'Mostrar'}
           </button>
-          <button onClick={handleDelete}
-            style={{ background: confirmDelete ? `${C.pink}28` : `${C.pink}15`, border: `1px solid ${confirmDelete ? C.pink : C.pink + '44'}`, borderRadius: '8px', padding: '8px 12px', color: C.pink, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
-            title={confirmDelete ? 'Confirmar' : 'Eliminar'}>
+          <button onClick={() => onDelete(product)}
+            style={{ background: `${C.pink}15`, border: `1px solid ${C.pink}44`, borderRadius: '8px', padding: '8px 12px', color: C.pink, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = `${C.pink}28`; e.currentTarget.style.borderColor = C.pink; }}
+            onMouseLeave={e => { e.currentTarget.style.background = `${C.pink}15`; e.currentTarget.style.borderColor = `${C.pink}44`; }}
+            title="Eliminar">
             <Trash2 size={13} />
           </button>
         </div>
@@ -82,7 +80,7 @@ function AdminProductCard({ product, onEdit, onDelete, onToggleDisponible }) {
   );
 }
 
-/* ─── MODAL PRODUCTO ─────────────────────────────────────────── */
+/* ─── MODAL PRODUCTO ─────────────────────────────────────────────────────── */
 function ProductModal({ product, categories, onSave, onClose }) {
   const isEdit = !!product?.id;
   const [form, setForm] = useState({
@@ -94,10 +92,10 @@ function ProductModal({ product, categories, onSave, onClose }) {
     bDisponible:  product?.bDisponible  ?? true,
     bActivo:      product?.bActivo      ?? true,
   });
-  const [saving, setSaving] = useState(false);
-  const [error,  setError]  = useState('');
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(product?.sImagenUrl || '');
+  const [saving,   setSaving]   = useState(false);
+  const [error,    setError]    = useState('');
+  const [file,     setFile]     = useState(null);
+  const [preview,  setPreview]  = useState(product?.sImagenUrl || '');
   const [dragOver, setDragOver] = useState(false);
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
@@ -112,9 +110,7 @@ function ProductModal({ product, categories, onSave, onClose }) {
     }
   };
 
-  const preventDefaults = e => {
-    e.preventDefault(); e.stopPropagation();
-  };
+  const preventDefaults = e => { e.preventDefault(); e.stopPropagation(); };
 
   const handleDrop = e => {
     preventDefaults(e); setDragOver(false);
@@ -122,7 +118,7 @@ function ProductModal({ product, categories, onSave, onClose }) {
   };
 
   const handleSave = async () => {
-    if (!form.sNombre.trim())                             return setError('El nombre es requerido.');
+    if (!form.sNombre.trim())                              return setError('El nombre es requerido.');
     if (!form.dPrecio || isNaN(parseFloat(form.dPrecio))) return setError('El precio debe ser un número válido.');
     if (!form.iCategoriaId)                               return setError('La categoría es requerida.');
     setSaving(true); setError('');
@@ -167,27 +163,27 @@ function ProductModal({ product, categories, onSave, onClose }) {
             <label style={lbl}>Imagen del Producto</label>
             <div
               onDragEnter={e => { preventDefaults(e); setDragOver(true); }}
-            onDragLeave={e => { preventDefaults(e); setDragOver(false); }}
-            onDragOver={e => { preventDefaults(e); setDragOver(true); }}
-            onDrop={handleDrop}
-            onClick={() => document.getElementById('file-upload').click()}
-            style={{ width: '100%', height: '160px', borderRadius: '12px', border: `2px dashed ${dragOver ? C.pink : C.border}`, background: dragOver ? `${C.pink}11` : preview ? C.bg : `${C.bgCard}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s', gap: '8px' }}
-          >
-            {preview ? (
-              <>
-                <img src={preview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: dragOver ? 0.3 : 1 }} />
-                {dragOver && <div style={{ position: 'absolute', fontWeight: '800', color: C.pink, display: 'flex', alignItems: 'center', gap: '8px' }}><ImagePlus size={20} /> Soltar imagen aquí</div>}
-              </>
-            ) : (
-              <>
-                <ImagePlus size={32} color={dragOver ? C.pink : C.textMuted} style={{ transition: 'color 0.2s' }} />
-                <span style={{ color: dragOver ? C.pink : C.textMuted, fontSize: '13px', fontWeight: '600', pointerEvents: 'none' }}>
-                  Haz clic o arrastra tu imagen aquí
-                </span>
-              </>
-            )}
-            <input id="file-upload" type="file" accept="image/*" onChange={e => { if (e.target.files?.length) handleFile(e.target.files[0]); }} style={{ display: 'none' }} />
-          </div>
+              onDragLeave={e => { preventDefaults(e); setDragOver(false); }}
+              onDragOver={e => { preventDefaults(e); setDragOver(true); }}
+              onDrop={handleDrop}
+              onClick={() => document.getElementById('file-upload').click()}
+              style={{ width: '100%', height: '160px', borderRadius: '12px', border: `2px dashed ${dragOver ? C.pink : C.border}`, background: dragOver ? `${C.pink}11` : preview ? C.bg : `${C.bgCard}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s', gap: '8px' }}
+            >
+              {preview ? (
+                <>
+                  <img src={preview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: dragOver ? 0.3 : 1 }} />
+                  {dragOver && <div style={{ position: 'absolute', fontWeight: '800', color: C.pink, display: 'flex', alignItems: 'center', gap: '8px' }}><ImagePlus size={20} /> Soltar imagen aquí</div>}
+                </>
+              ) : (
+                <>
+                  <ImagePlus size={32} color={dragOver ? C.pink : C.textMuted} style={{ transition: 'color 0.2s' }} />
+                  <span style={{ color: dragOver ? C.pink : C.textMuted, fontSize: '13px', fontWeight: '600', pointerEvents: 'none' }}>
+                    Haz clic o arrastra tu imagen aquí
+                  </span>
+                </>
+              )}
+              <input id="file-upload" type="file" accept="image/*" onChange={e => { if (e.target.files?.length) handleFile(e.target.files[0]); }} style={{ display: 'none' }} />
+            </div>
           </div>
 
           <div>
@@ -224,8 +220,6 @@ function ProductModal({ product, categories, onSave, onClose }) {
             </div>
           </div>
 
-
-
           <div style={{ display: 'flex', gap: '10px' }}>
             {[
               { key: 'bDisponible', label: 'Disponible',      color: C.teal   },
@@ -261,9 +255,9 @@ function ProductModal({ product, categories, onSave, onClose }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════════
    MENU ADMIN
-═══════════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════════════════════ */
 const MenuAdmin = () => {
   const [products,    setProducts]    = useState([]);
   const [categories,  setCategories]  = useState([]);
@@ -278,6 +272,7 @@ const MenuAdmin = () => {
   const [orden,       setOrden]       = useState('');
   const [searchFocus, setSearchFocus] = useState(false);
   const [modal,       setModal]       = useState(null);
+  const [confirm,     setConfirm]     = useState(null); // { title, message, onConfirm }
 
   const load = useCallback(async (silent = false) => {
     try {
@@ -323,15 +318,32 @@ const MenuAdmin = () => {
     await load(true);
   };
 
-  const handleDelete = async (id) => {
-    try { await productsService.delete(id); await load(true); }
-    catch (e) { alert(e.response?.data?.message || 'Error al eliminar.'); }
-  };
+  const handleDelete = useCallback((product) => {
+    setConfirm({
+      title: '¿Eliminar producto?',
+      message: `"${product.sNombre}" será eliminado permanentemente del menú. Esta acción no se puede deshacer.`,
+      onConfirm: async () => {
+        try { await productsService.delete(product.id); await load(true); }
+        catch (e) { alert(e.response?.data?.message || 'Error al eliminar.'); }
+        finally { setConfirm(null); }
+      },
+    });
+  }, [load]);
 
-  const handleToggleDisponible = async (product) => {
-    try { await productsService.update(product.id, { bDisponible: !product.bDisponible }); await load(true); }
-    catch { alert('Error al actualizar disponibilidad.'); }
-  };
+  const handleToggleDisponible = useCallback((product) => {
+    const ocultar = product.bDisponible;
+    setConfirm({
+      title: ocultar ? '¿Ocultar producto?' : '¿Mostrar producto?',
+      message: ocultar
+        ? `"${product.sNombre}" dejará de aparecer en el menú para los clientes.`
+        : `"${product.sNombre}" volverá a ser visible para los clientes en el menú.`,
+      onConfirm: async () => {
+        try { await productsService.update(product.id, { bDisponible: !product.bDisponible }); await load(true); }
+        catch { alert('Error al actualizar disponibilidad.'); }
+        finally { setConfirm(null); }
+      },
+    });
+  }, [load]);
 
   const clearFilters = () => { setSearchInput(''); setSearch(''); setCatId(''); setSoloDisp(false); setSoloInact(false); setOrden(''); };
   const hasFilters = searchInput || catId || soloDisp || soloInact || orden;
@@ -343,10 +355,10 @@ const MenuAdmin = () => {
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT, color: C.textPrimary }}>
 
-    
       <Header />
 
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '28px 24px 80px' }}>
+        <Breadcrumb />
 
         {/* Título + botón crear */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
@@ -478,6 +490,7 @@ const MenuAdmin = () => {
         )}
       </main>
 
+      {/* Modal producto */}
       {modal && (
         <ProductModal
           product={modal === 'create' ? null : modal}
@@ -485,6 +498,14 @@ const MenuAdmin = () => {
           onSave={handleSave}
           onClose={() => setModal(null)} />
       )}
+
+      {/* Modal confirmación */}
+      <ConfirmModal
+        isOpen={!!confirm}
+        onClose={() => setConfirm(null)}
+        onConfirm={confirm?.onConfirm ?? (() => {})}
+        title={confirm?.title ?? ''}
+        message={confirm?.message ?? ''} />
 
       <style>{`
         @keyframes spin  { to { transform: rotate(360deg); } }
@@ -495,5 +516,3 @@ const MenuAdmin = () => {
 };
 
 export default MenuAdmin;
-
-
