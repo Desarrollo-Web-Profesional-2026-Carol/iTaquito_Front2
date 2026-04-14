@@ -142,7 +142,6 @@ const NAV_CONFIG = {
       { label: "Mesas", path: "/tables", Icon: TableProperties },
       { label: "Menú", path: "/menu", Icon: UtensilsCrossed },
       { label: "Usuarios", path: "/users", Icon: Users },
-      { label: "Reportes", path: "/reports", Icon: BarChart3 },
       { label: 'Mapa de sitio', path: '/sitemap', Icon: Map },
 
     ],

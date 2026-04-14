@@ -125,16 +125,15 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     totalMesas: 0, mesasOcupadas: 0, mesasDisponibles: 0, mesasReservadas: 0,
     pedidosPendientes: 0, pedidosPreparacion: 0, pedidosActivos: 0,
-    ventasDia: 0, ventasSemana: 0, calificacion: 4.8,
+    ventasDia: 0, ventasSemana: 0,
   });
   const [actividad,     setActividad]     = useState([]);
   const [mesasPreview,  setMesasPreview]  = useState([]);
   const [loading,       setLoading]       = useState(true);
 
-  // ── Datos para gráficas ──
-  const [ventasHora,    setVentasHora]    = useState([]);  // Line chart
-  const [pedidosEstado, setPedidosEstado] = useState([]);  // Bar chart
-  const [mesasDonut,    setMesasDonut]    = useState([]);  // Pie/Donut
+  const [ventasHora,    setVentasHora]    = useState([]);
+  const [pedidosEstado, setPedidosEstado] = useState([]);
+  const [mesasDonut,    setMesasDonut]    = useState([]);
 
   useEffect(() => {
     if (!isAdmin && user) {
@@ -171,11 +170,11 @@ const Dashboard = () => {
       const mesas      = Array.isArray(mesasData) ? mesasData : (mesasData.data || []);
       const mesasMap   = Object.fromEntries(mesas.map(m => [m.id, m]));
 
-      const totalMesas      = mesas.length;
-      const mesasOcupadas   = mesas.filter(m => m.sEstado === 'ocupada').length;
-      const mesasDisponibles= mesas.filter(m => m.sEstado === 'disponible').length;
-      const mesasReservadas = mesas.filter(m => m.sEstado === 'reservada').length;
-      const mesasInactivas  = mesas.filter(m => m.sEstado === 'inactiva').length;
+      const totalMesas       = mesas.length;
+      const mesasOcupadas    = mesas.filter(m => m.sEstado === 'ocupada').length;
+      const mesasDisponibles = mesas.filter(m => m.sEstado === 'disponible').length;
+      const mesasReservadas  = mesas.filter(m => m.sEstado === 'reservada').length;
+      const mesasInactivas   = mesas.filter(m => m.sEstado === 'inactiva').length;
 
       const pedidosData = await ordersService.getAll();
       const pedidos     = Array.isArray(pedidosData) ? pedidosData : (pedidosData.data || []);
@@ -185,29 +184,30 @@ const Dashboard = () => {
       const pedidosActivos     = pedidosPendientes + pedidosPreparacion;
 
       const hoy = new Date().toISOString().split('T')[0];
-      const pedidosHoy   = pedidos.filter(p => p.createdAt && new Date(p.createdAt).toISOString().split('T')[0] === hoy && p.sEstado === 'entregado');
-      const ventasDia    = pedidosHoy.reduce((t, p) => t + (parseFloat(p.dTotal) || 0), 0);
 
-      const semanaAtras  = new Date(); semanaAtras.setDate(semanaAtras.getDate() - 7);
+      // ✅ FIX: usar sEstado === 'pagado' y dFechaPago (no 'entregado' ni createdAt)
+      const pedidosHoy = pedidos.filter(p => {
+        if (!p.dFechaPago) return false;
+        return new Date(p.dFechaPago).toISOString().split('T')[0] === hoy && p.sEstado === 'pagado';
+      });
+      const ventasDia = pedidosHoy.reduce((t, p) => t + (parseFloat(p.dTotal) || 0), 0);
+
+      const semanaAtras = new Date();
+      semanaAtras.setDate(semanaAtras.getDate() - 7);
       const ventasSemana = pedidos
-        .filter(p => p.createdAt && new Date(p.createdAt) >= semanaAtras && p.sEstado === 'entregado')
+        .filter(p => p.dFechaPago && new Date(p.dFechaPago) >= semanaAtras && p.sEstado === 'pagado')
         .reduce((t, p) => t + (parseFloat(p.dTotal) || 0), 0);
 
       // ── 1. LINE CHART: ventas agrupadas por hora (hoy) ──
       const ventasPorHora = {};
       pedidosHoy.forEach(p => {
-        const h = new Date(p.createdAt).getHours();
+        const h = new Date(p.dFechaPago).getHours();
         const key = `${h.toString().padStart(2,'0')}:00`;
         ventasPorHora[key] = (ventasPorHora[key] || 0) + (parseFloat(p.dTotal) || 0);
       });
-      // Rellenar horas vacías con 0 para que la línea sea continua
       const horasDelDia = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2,'0')}:00`);
       const lineData = horasDelDia
-        .filter(h => {
-          const hNum = parseInt(h);
-          const currentHour = new Date().getHours();
-          return hNum <= currentHour;
-        })
+        .filter(h => parseInt(h) <= new Date().getHours())
         .map(h => ({ hora: h, ventas: +(ventasPorHora[h] || 0).toFixed(2) }));
       setVentasHora(lineData.length > 1 ? lineData : [
         { hora: '08:00', ventas: 0 }, { hora: '09:00', ventas: 0 },
@@ -215,11 +215,11 @@ const Dashboard = () => {
 
       // ── 2. BAR CHART: pedidos por estado ──
       const estadoLabels = {
-        pendiente:       { label: 'Pendiente',    color: C.yellow  },
-        en_preparacion:  { label: 'En cocina',    color: C.orange  },
-        listo:           { label: 'Listo',        color: C.teal    },
-        entregado:       { label: 'Entregado',    color: C.purple  },
-        cancelado:       { label: 'Cancelado',    color: C.pink    },
+        pendiente:      { label: 'Pendiente', color: C.yellow  },
+        en_preparacion: { label: 'En cocina', color: C.orange  },
+        listo:          { label: 'Listo',     color: C.teal    },
+        entregado:      { label: 'Entregado', color: C.purple  },
+        cancelado:      { label: 'Cancelado', color: C.pink    },
       };
       const countByEstado = {};
       pedidos.forEach(p => { countByEstado[p.sEstado] = (countByEstado[p.sEstado] || 0) + 1; });
@@ -230,9 +230,9 @@ const Dashboard = () => {
 
       // ── 3. DONUT: distribución de mesas ──
       const donutData = [
-        { name: 'Disponibles', value: mesasDisponibles, color: C.teal   },
-        { name: 'Ocupadas',    value: mesasOcupadas,    color: C.orange  },
-        { name: 'Reservadas',  value: mesasReservadas,  color: C.yellow  },
+        { name: 'Disponibles', value: mesasDisponibles, color: C.teal     },
+        { name: 'Ocupadas',    value: mesasOcupadas,    color: C.orange   },
+        { name: 'Reservadas',  value: mesasReservadas,  color: C.yellow   },
         { name: 'Inactivas',   value: mesasInactivas,   color: C.textMuted },
       ].filter(d => d.value > 0);
       setMesasDonut(donutData);
@@ -240,11 +240,12 @@ const Dashboard = () => {
       // ── Actividad reciente ──
       const eventos = [];
       const estadoMap = {
-        pendiente:      { icon: Clock,          color: C.yellow, label: 'creado'         },
-        en_preparacion: { icon: UtensilsCrossed, color: C.orange, label: 'en preparación' },
-        listo:          { icon: CheckCircle,    color: C.teal,   label: 'listo'           },
-        entregado:      { icon: ShoppingBag,    color: C.purple, label: 'entregado'       },
-        cancelado:      { icon: XCircle,        color: '#C0392B',label: 'cancelado'       },
+        pendiente:      { icon: Clock,           color: C.yellow,   label: 'creado'          },
+        en_preparacion: { icon: UtensilsCrossed, color: C.orange,   label: 'en preparación'  },
+        listo:          { icon: CheckCircle,     color: C.teal,     label: 'listo'            },
+        entregado:      { icon: ShoppingBag,     color: C.purple,   label: 'entregado'        },
+        cancelado:      { icon: XCircle,         color: '#C0392B',  label: 'cancelado'        },
+        pagado:         { icon: DollarSign,      color: C.teal,     label: 'pagado'           },
       };
       [...pedidos].sort((a,b) => new Date(b.updatedAt)-new Date(a.updatedAt)).slice(0,8).forEach(p => {
         const info = estadoMap[p.sEstado] || estadoMap.pendiente;
@@ -252,10 +253,10 @@ const Dashboard = () => {
         eventos.push({ icon: info.icon, color: info.color, title: `Pedido #${p.id} ${info.label}`, sub: `${mesa?.sNombre || `Mesa ${p.iMesaId}`} · $${parseFloat(p.dTotal||0).toFixed(2)}`, time: formatTimeAgo(p.updatedAt||p.createdAt) });
       });
       const mesaEstadoMap = {
-        disponible: { icon: CheckCircle, color: C.teal,     label: 'disponible' },
-        ocupada:    { icon: Users,       color: C.orange,   label: 'ocupada'    },
-        reservada:  { icon: Clock,       color: C.yellow,   label: 'reservada'  },
-        inactiva:   { icon: XCircle,     color: C.textMuted,label: 'inactiva'   },
+        disponible: { icon: CheckCircle, color: C.teal,      label: 'disponible' },
+        ocupada:    { icon: Users,       color: C.orange,    label: 'ocupada'    },
+        reservada:  { icon: Clock,       color: C.yellow,    label: 'reservada'  },
+        inactiva:   { icon: XCircle,     color: C.textMuted, label: 'inactiva'   },
       };
       [...mesas].sort((a,b) => new Date(b.updatedAt)-new Date(a.updatedAt)).slice(0,4).forEach(m => {
         const info = mesaEstadoMap[m.sEstado] || mesaEstadoMap.disponible;
@@ -270,7 +271,7 @@ const Dashboard = () => {
       };
       setActividad(eventos.sort((a,b) => getMinutes(a.time)-getMinutes(b.time)).slice(0,6));
       setMesasPreview(mesas.slice(0,8).map(m => ({ id: m.id, num: m.sNombre||`Mesa ${m.id}`, cap: m.iCapacidad||4, status: m.sEstado||'disponible' })));
-      setStats({ totalMesas, mesasOcupadas, mesasDisponibles, mesasReservadas, pedidosPendientes, pedidosPreparacion, pedidosActivos, ventasDia, ventasSemana, calificacion: 4.8 });
+      setStats({ totalMesas, mesasOcupadas, mesasDisponibles, mesasReservadas, pedidosPendientes, pedidosPreparacion, pedidosActivos, ventasDia, ventasSemana});
     } catch (err) {
       console.error('Error cargando dashboard:', err);
     } finally {
@@ -290,12 +291,11 @@ const Dashboard = () => {
   const ocupacionPorcentaje = stats.totalMesas > 0 ? Math.round((stats.mesasOcupadas / stats.totalMesas) * 100) : 0;
 
   const STATS = [
-    { label: "Total Mesas",       value: stats.totalMesas,                    sub: "En el establecimiento",                                                Icon: TableProperties, color: C.pink   },
-    { label: "Mesas Ocupadas",    value: stats.mesasOcupadas,                 sub: `${ocupacionPorcentaje}% de ocupación`,                                 Icon: Users,           color: C.orange },
-    { label: "Mesas Disponibles", value: stats.mesasDisponibles,              sub: `${stats.mesasReservadas} reservadas`,                                   Icon: CheckCircle,     color: C.teal   },
-    { label: "Pedidos Activos",   value: stats.pedidosActivos,                sub: `${stats.pedidosPendientes} pendientes · ${stats.pedidosPreparacion} en cocina`, Icon: ShoppingBag, color: C.yellow },
-    { label: "Ventas del Día",    value: `$${stats.ventasDia.toLocaleString('es-MX')}`, sub: "Hoy",                                                        Icon: DollarSign,      color: C.purple },
-    { label: "Calificación",      value: stats.calificacion.toFixed(1),       sub: "Promedio del mes",                                                     Icon: Star,            color: C.yellow },
+    { label: "Total Mesas",       value: stats.totalMesas,                             sub: "En el establecimiento",                                                          Icon: TableProperties, color: C.pink   },
+    { label: "Mesas Ocupadas",    value: stats.mesasOcupadas,                          sub: `${ocupacionPorcentaje}% de ocupación`,                                           Icon: Users,           color: C.orange },
+    { label: "Mesas Disponibles", value: stats.mesasDisponibles,                       sub: `${stats.mesasReservadas} reservadas`,                                             Icon: CheckCircle,     color: C.teal   },
+    { label: "Pedidos Activos",   value: stats.pedidosActivos,                         sub: `${stats.pedidosPendientes} pendientes · ${stats.pedidosPreparacion} en cocina`,   Icon: ShoppingBag,     color: C.yellow },
+    { label: "Ventas del Día",    value: `$${stats.ventasDia.toLocaleString('es-MX')}`, sub: "Hoy",                                                                           Icon: DollarSign,      color: C.purple },
   ];
 
   if (!isAdmin && user) {
@@ -349,14 +349,11 @@ const Dashboard = () => {
             <QuickAction label="Mesas"    Icon={TableProperties} color={C.pink}   onClick={() => navigate('/tables')}  />
             <QuickAction label="Menú"     Icon={UtensilsCrossed} color={C.orange} onClick={() => navigate('/menu')}    />
             <QuickAction label="Usuarios" Icon={Users}           color={C.teal}   onClick={() => navigate('/users')}   />
-            <QuickAction label="Reportes" Icon={BarChart3}       color={C.yellow} onClick={() => navigate('/reports')} />
             <QuickAction label="Pedidos"  Icon={ShoppingBag}     color={C.purple} onClick={() => navigate('/orders')}  />
           </div>
         </div>
 
-        {/* ══ FILA DE GRÁFICAS ══════════════════════════════════════ */}
-
-        {/* ── 1. LINE CHART: Ventas por hora ── */}
+        {/* ── 1. LINE CHART ── */}
         <ChartCard title="Ventas por Hora (Hoy)" accent={C.teal} style={{ marginBottom: "24px" }}>
           {loading ? (
             <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.textMuted, fontSize: '13px' }}>Cargando datos...</div>
@@ -376,7 +373,6 @@ const Dashboard = () => {
         {/* ── FILA: BAR + DONUT ── */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "24px" }}>
 
-          {/* ── 2. BAR CHART: Pedidos por estado ── */}
           <ChartCard title="Pedidos por Estado" accent={C.orange}>
             {loading ? (
               <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.textMuted, fontSize: '13px' }}>Cargando datos...</div>
@@ -397,7 +393,6 @@ const Dashboard = () => {
             )}
           </ChartCard>
 
-          {/* ── 3. DONUT: Distribución de mesas ── */}
           <ChartCard title="Distribución de Mesas" accent={C.purple}>
             {loading ? (
               <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.textMuted, fontSize: '13px' }}>Cargando datos...</div>
@@ -415,7 +410,6 @@ const Dashboard = () => {
                     <Tooltip content={<CustomTooltip suffix=" mesas" />} />
                   </PieChart>
                 </ResponsiveContainer>
-                {/* Leyenda manual para el donut */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
                   {mesasDonut.map((entry, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -439,7 +433,6 @@ const Dashboard = () => {
         {/* ── DOS COLUMNAS: Actividad + Estado mesas ── */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
 
-          {/* Actividad reciente */}
           <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: "16px", padding: "20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -457,7 +450,6 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Estado de mesas */}
           <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: "16px", padding: "20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>

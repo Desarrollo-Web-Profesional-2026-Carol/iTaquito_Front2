@@ -31,7 +31,6 @@ const SITE_STRUCTURE = [
       { label: 'Mesas', path: '/tables', description: 'Gestión de mesas del restaurante', icon: TableProperties },
       { label: 'Menú', path: '/menu-admin', description: 'Administración de productos y categorías', icon: UtensilsCrossed },
       { label: 'Usuarios', path: '/users', description: 'Gestión de cuentas y roles del sistema', icon: Users },
-      { label: 'Reportes', path: '/reports', description: 'Estadísticas y reportes de ventas', icon: BarChart3 },
     ],
   },
   {

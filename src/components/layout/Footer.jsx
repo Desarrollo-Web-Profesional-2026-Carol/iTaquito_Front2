@@ -134,7 +134,6 @@ const Footer = () => {
                 { label: 'Inicio', path: '/' },
                 { label: 'Mesas', path: '/tables' },
                 { label: 'Dashboard', path: '/dashboard' },
-                { label: 'Reportes', path: '/reports' },
               ].map((link) => (
                 <li key={link.label} style={{ marginBottom: '12px' }}>
                   <a

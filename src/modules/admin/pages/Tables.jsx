@@ -202,7 +202,7 @@ const Tables = () => {
 
             {/* Ver Pedidos */}
             <button
-              onClick={() => navigate('/mesero-pedidos')}
+              onClick={() => navigate('/orders')}
               style={{
                 background: `${C.teal}15`, border: `1px solid ${C.teal}44`,
                 borderRadius: "10px", padding: "8px 14px",

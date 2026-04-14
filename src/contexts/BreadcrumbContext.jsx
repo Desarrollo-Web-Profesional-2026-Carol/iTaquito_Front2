@@ -9,7 +9,6 @@ const ROUTE_NAMES = {
   'menu-admin':     'Menú',
   'users':          'Usuarios',
   'admin-users':    'Usuarios',
-  'reports':        'Reportes',
   'cajero':         'Cajero',
   'history':        'Historial',
   'my-order':       'Mi Pedido',
