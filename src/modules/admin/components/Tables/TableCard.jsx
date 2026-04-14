@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { C, FONT, glow } from '../../../../styles/designTokens';
 import {
@@ -25,7 +26,9 @@ const UBICACION = {
 /* ─── TABLE CARD ─────────────────────────────────────────────── */
 const TableCard = ({ table, onEdit, onDelete, onStatusChange }) => {
   const { isAdmin } = useAuth();
-  const [hov, setHov] = useState(false);
+  const navigate = useNavigate();
+  const [hov,        setHov]        = useState(false);
+  const [ocupando,   setOcupando]   = useState(false);
 
   const st  = STATUS[table.sEstado]   || STATUS.inactiva;
   const ub  = UBICACION[table.sUbicacion] || { Icon: Armchair, label: table.sUbicacion };
@@ -168,10 +171,33 @@ const TableCard = ({ table, onEdit, onDelete, onStatusChange }) => {
             /* Mesero: ocupar / liberar (solo mesas activas) */
             table.sEstado !== 'inactiva' && (
               <ActionBtn
-                label={isDisponible ? "Ocupar mesa" : "Liberar mesa"}
+                label={ocupando ? "Ocupando..." : isDisponible ? "Ocupar mesa" : "Liberar mesa"}
                 Icon={isDisponible ? DoorOpen : CheckCircle}
                 color={isDisponible ? C.orange : C.teal}
-                onClick={() => onStatusChange(table.id, isDisponible ? 'ocupada' : 'disponible')}
+                disabled={ocupando}
+                onClick={async () => {
+                  if (isDisponible) {
+                    setOcupando(true);
+                    try {
+                      // Guardar mesa seleccionada ANTES de cambiar estado
+                      localStorage.setItem('meseroMesaId', table.id);
+                      localStorage.setItem('meseroMesaNombre', table.sNombre);
+                      // Esperar a que el backend confirme el cambio
+                      await onStatusChange(table.id, 'ocupada');
+                      // Navegar DESPUÉS de que el backend ya actualizó el estado
+                      navigate('/menu');
+                    } catch (e) {
+                      localStorage.removeItem('meseroMesaId');
+                      localStorage.removeItem('meseroMesaNombre');
+                      setOcupando(false);
+                    }
+                  } else {
+                    // Liberar mesa
+                    localStorage.removeItem('meseroMesaId');
+                    localStorage.removeItem('meseroMesaNombre');
+                    await onStatusChange(table.id, 'disponible');
+                  }
+                }}
                 fullWidth
               />
             )
@@ -184,30 +210,31 @@ const TableCard = ({ table, onEdit, onDelete, onStatusChange }) => {
 };
 
 /* ─── ACTION BUTTON ──────────────────────────────────────────── */
-function ActionBtn({ label, Icon, color, onClick, fullWidth = false }) {
+function ActionBtn({ label, Icon, color, onClick, fullWidth = false, disabled = false }) {
   const [hov, setHov] = useState(false);
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
         flex:           fullWidth ? "1" : "1",
-        background:     hov ? `${color}22` : `${color}12`,
-        border:         `1.5px solid ${hov ? color : color + "44"}`,
+        background:     disabled ? `${color}08` : hov ? `${color}22` : `${color}12`,
+        border:         `1.5px solid ${disabled ? color + "22" : hov ? color : color + "44"}`,
         borderRadius:   "9px",
         padding:        "8px 12px",
-        color:           color,
+        color:          disabled ? `${color}66` : color,
         fontFamily:      FONT,
         fontWeight:     "700",
         fontSize:       "12px",
-        cursor:         "pointer",
+        cursor:         disabled ? "not-allowed" : "pointer",
         display:        "flex",
         alignItems:     "center",
         justifyContent: "center",
         gap:            "5px",
         transition:     "all 0.18s ease",
-        boxShadow:      hov ? glow(color, "22") : "none",
+        boxShadow:      hov && !disabled ? glow(color, "22") : "none",
       }}
     >
       <Icon size={13} />

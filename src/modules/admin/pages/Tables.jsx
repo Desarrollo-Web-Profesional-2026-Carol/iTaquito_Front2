@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { tablesService } from '../../../services/tables';
 import TableCard from '../components/Tables/TableCard';
@@ -9,7 +10,7 @@ import { C, FONT, glow } from '../../../styles/designTokens';
 import {
   TableProperties, Plus, RefreshCw,
   CheckCircle, XCircle, Clock, AlertCircle,
-  Search, SlidersHorizontal
+  Search, SlidersHorizontal, ClipboardList
 } from 'lucide-react';
 import Breadcrumb from '../../../components/layout/Breadcrumb';
 
@@ -90,6 +91,7 @@ const Tables = () => {
   const [modalOpen,    setModalOpen]    = useState(false);
   const [selectedTable,setSelectedTable]= useState(null);
   const { isAdmin } = useAuth();
+  const navigate = useNavigate();
 
   /* ── Carga de datos ── */
   const loadTables = async () => {
@@ -196,6 +198,24 @@ const Tables = () => {
             >
               <RefreshCw size={14} style={{ animation: refreshing ? "spin 0.7s linear infinite" : "none" }} />
               Actualizar
+            </button>
+
+            {/* Ver Pedidos */}
+            <button
+              onClick={() => navigate('/mesero-pedidos')}
+              style={{
+                background: `${C.teal}15`, border: `1px solid ${C.teal}44`,
+                borderRadius: "10px", padding: "8px 14px",
+                color: C.teal, fontFamily: FONT, fontWeight: "700",
+                fontSize: "13px", cursor: "pointer",
+                display: "flex", alignItems: "center", gap: "6px",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = `${C.teal}25`; e.currentTarget.style.borderColor = C.teal; }}
+              onMouseLeave={e => { e.currentTarget.style.background = `${C.teal}15`; e.currentTarget.style.borderColor = `${C.teal}44`; }}
+            >
+              <ClipboardList size={15} />
+              Ver Pedidos
             </button>
 
             {/* Nueva mesa — solo admin */}

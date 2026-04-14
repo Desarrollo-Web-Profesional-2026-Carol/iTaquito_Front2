@@ -55,9 +55,10 @@ function NavBtn({ label, active, onClick, color, children }) {
 }
 
 /* ─── HEADER ─────────────────────────────────────────────────── */
-function ClientHeader({ user, totalItems, onLogout }) {
+function ClientHeader({ user, totalItems, onLogout, iMesaId, mesaNombre }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const isMesero = user?.rol === 'mesero';
   return (
     <header style={{ background: C.bgAccent, borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 200, boxShadow: '0 2px 16px rgba(0,0,0,0.4)', fontFamily: FONT }}>
       <div style={{ height: '3px', background: `linear-gradient(90deg, ${C.teal}, ${C.teal}88, transparent)`, boxShadow: 'none' }} />
@@ -70,9 +71,9 @@ function ClientHeader({ user, totalItems, onLogout }) {
           <span style={{ color: C.cream, fontWeight: '800', fontSize: '16px' }}>iTaquito</span>
         </div>
 
-        {(user?.mesa || user?.iMesaId) && (
+        {(mesaNombre || iMesaId) && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: `${C.teal}12`, border: `1px solid ${C.teal}33`, borderRadius: '20px', padding: '4px 10px', color: C.teal, fontSize: '12px', fontWeight: '700' }}>
-            <MapPin size={11} /> {user.mesa?.sNombre || `Mesa ${user.iMesaId}`}
+            <MapPin size={11} /> {mesaNombre || `Mesa ${iMesaId}`}
           </div>
         )}
 
@@ -82,18 +83,22 @@ function ClientHeader({ user, totalItems, onLogout }) {
           <UtensilsCrossed size={14} />
         </NavBtn>
 
-        <NavBtn label="Mi Pedido" active={pathname === '/my-order'} color={C.pink} onClick={() => navigate('/my-order')}>
-          <ShoppingBag size={14} />
-          {totalItems > 0 && (
-            <span style={{ background: C.pink, color: '#fff', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {totalItems}
-            </span>
-          )}
-        </NavBtn>
+        {!isMesero && (
+          <>
+            <NavBtn label="Mi Pedido" active={pathname === '/my-order'} color={C.pink} onClick={() => navigate('/my-order')}>
+              <ShoppingBag size={14} />
+              {totalItems > 0 && (
+                <span style={{ background: C.pink, color: '#fff', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {totalItems}
+                </span>
+              )}
+            </NavBtn>
 
-        <NavBtn label="Mis Pedidos" active={pathname === '/my-orders'} color={C.purple} onClick={() => navigate('/my-orders')}>
-          <ClipboardList size={14} />
-        </NavBtn>
+            <NavBtn label="Mis Pedidos" active={pathname === '/my-orders'} color={C.purple} onClick={() => navigate('/my-orders')}>
+              <ClipboardList size={14} />
+            </NavBtn>
+          </>
+        )}
 
         <button onClick={onLogout}
           style={{ background: `${C.pink}12`, border: `1px solid ${C.pink}33`, borderRadius: '8px', padding: '6px 12px', color: C.pink, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
@@ -406,6 +411,12 @@ function PlatesSidebar({ plates, activePlateId, onSelect, onAdd, onRemove, onRen
 const MenuMesa = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  // iMesaId: para rol 'mesa' viene del user, para rol 'mesero' viene del localStorage
+  const isMesero = user?.rol === 'mesero';
+  const iMesaId = user?.iMesaId || (isMesero ? Number(localStorage.getItem('meseroMesaId')) || null : null);
+  const meseroMesaNombre = isMesero ? localStorage.getItem('meseroMesaNombre') : null;
+
   const {
     addItemQty, totalItems, totalPrecio,
     plates, activePlateId, activePlate,
@@ -432,13 +443,14 @@ const MenuMesa = () => {
   const [orden,       setOrden]       = useState('');
   const [searchFocus, setSearchFocus] = useState(false);
 
-  const [mesaEstado,    setMesaEstado]    = useState(null);
+  // El mesero ya tiene la mesa ocupada (la ocupó desde /tables)
+  const [mesaEstado, setMesaEstado] = useState(isMesero ? 'ocupada' : null);
   const [animatingStart, setAnimatingStart] = useState(false);
   const [animatingEnd,   setAnimatingEnd]   = useState(false);
   const [showPayModal,   setShowPayModal]   = useState(false);
 
   const { ejecutar: ejecutarPedirCuenta, loading: payLoading, error: payError, clearError: clearPayError } = usePedirCuenta({
-    iMesaId: user?.iMesaId,
+    iMesaId,
     onEnPago: useCallback(() => {
       setTimeout(() => { setMesaEstado('en_pago'); setAnimatingEnd(false); }, 2000);
     }, []),
@@ -456,16 +468,30 @@ const MenuMesa = () => {
     else setAnimatingEnd(false);
   };
 
-  // Polling estado mesa
+  // Si el mesero navega sin mesa seleccionada (ej: refresh), redirigir a /tables
   useEffect(() => {
-    if (!user?.iMesaId) return;
+    if (isMesero && !iMesaId) {
+      navigate('/tables');
+    }
+  }, [isMesero, iMesaId, navigate]);
+
+  // Polling para vigilar el estado de la mesa (Ej: Liberación del cajero)
+  useEffect(() => {
+    if (!iMesaId) return;
     const fetchMesa = async () => {
       try {
-        const res = await tablesService.getById(user.iMesaId);
+        const res = await tablesService.getById(iMesaId);
         if (res.success && res.data) {
           setMesaEstado(res.data.sEstado);
+          // Si la mesa quedó disponible, limpiar tokens
           if (res.data.sEstado === 'disponible') {
             localStorage.removeItem('mesaSessionToken');
+            if (isMesero) {
+              localStorage.removeItem('meseroMesaId');
+              localStorage.removeItem('meseroMesaNombre');
+              // Redirigir al mesero de vuelta a /tables
+              navigate('/tables');
+            }
           }
         }
       } catch (err) {
@@ -475,14 +501,14 @@ const MenuMesa = () => {
     fetchMesa();
     const interval = setInterval(fetchMesa, 4000);
     return () => clearInterval(interval);
-  }, [user?.iMesaId]);
+  }, [iMesaId, isMesero, navigate]);
 
   const handleComenzar = async () => {
     try {
       setAnimatingStart(true);
       const newToken = crypto.randomUUID();
       localStorage.setItem('mesaSessionToken', newToken);
-      await tablesService.changeStatus(user.iMesaId, 'ocupada');
+      await tablesService.changeStatus(iMesaId, 'ocupada');
       setTimeout(() => {
         setMesaEstado('ocupada');
         setAnimatingStart(false);
@@ -501,9 +527,13 @@ const MenuMesa = () => {
   const handleLogoutConfirm = async () => {
     setLoggingOut(true);
     try {
-      if (user?.iMesaId && mesaEstado === 'ocupada') {
-        await tablesService.changeStatus(user.iMesaId, 'disponible');
+      if (iMesaId && mesaEstado === 'ocupada') {
+        await tablesService.changeStatus(iMesaId, 'disponible');
         localStorage.removeItem('mesaSessionToken');
+        if (isMesero) {
+          localStorage.removeItem('meseroMesaId');
+          localStorage.removeItem('meseroMesaNombre');
+        }
       }
     } catch { /* silently fail */ }
     clearAllPlates();
@@ -545,15 +575,20 @@ const MenuMesa = () => {
     addItemQty({ id: product.id, nombre: product.sNombre, precio: parseFloat(product.dPrecio), imagen: product.sImagenUrl || null }, qty);
   };
 
+
   const handleQuickOrder = async () => {
     const nonEmpty = plates.filter(p => p.items.length > 0);
     if (!nonEmpty.length) return;
+    if (!iMesaId) {
+      setOrderError('No hay una mesa seleccionada. Regresa a /tables y ocupa una mesa.');
+      return;
+    }
     const token = localStorage.getItem('mesaSessionToken');
     setOrderingNow(true); setOrderError('');
     try {
       for (const plate of nonEmpty) {
         await ordersService.create({
-          iMesaId: user.iMesaId,
+          iMesaId,
           items: plate.items.map(i => ({ iProductoId: i.id, iCantidad: i.qty })),
           sTokenSesion: token,
           sNombrePlato: plate.label,
@@ -583,8 +618,8 @@ const MenuMesa = () => {
         </div>
       )}
 
-      {/* ─── MODAL BIENVENIDA (BLOQUEO) ─── */}
-      {mesaEstado === 'disponible' && !animatingStart && (
+      {/* ─── MODAL BIENVENIDA (BLOQUEO) — solo para rol 'mesa', no para mesero ─── */}
+      {mesaEstado === 'disponible' && !animatingStart && !isMesero && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: C.bgCard, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '24px' }}>
           <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: `${C.pink}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', boxShadow: glow(C.pink, '44') }}>
             <UtensilsCrossed size={40} color={C.pink} />
@@ -676,7 +711,10 @@ const MenuMesa = () => {
       )}
 
       {/* ── El header ahora llama a handleLogoutRequest en lugar de handleLogout ── */}
-      <ClientHeader user={user} totalItems={totalItems} onLogout={handleLogoutRequest} />
+      <ClientHeader user={user} totalItems={totalItems} onLogout={handleLogoutRequest}
+        iMesaId={iMesaId}
+        mesaNombre={user?.mesa?.sNombre || meseroMesaNombre || (iMesaId ? `Mesa ${iMesaId}` : null)}
+      />
 
       <PapelPicado />
 

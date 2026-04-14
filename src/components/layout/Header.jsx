@@ -162,7 +162,7 @@ const NAV_CONFIG = {
     accentColor: C.orange,
     links: [
       { label: "Mesas", path: "/tables", Icon: TableProperties },
-      { label: "Pedidos", path: "/orders", Icon: ClipboardList },
+      { label: "Pedidos", path: "/mesero-pedidos", Icon: ClipboardList },
       { label: "Canciones", path: "/songs", Icon: Music },
     ],
   },
@@ -174,6 +174,13 @@ const NAV_CONFIG = {
       { label: "Historial", path: "/history", Icon: History },
     ],
   },
+  taquero: {
+    label: "Cocina",
+    accentColor: C.purple,
+    links: [
+      { label: "Cocina", path: "/taquero", Icon: UtensilsCrossed },
+    ],
+  },
 };
 
 /* ─── ROLE BADGE COLORS ──────────────────────────────────────── */
@@ -182,6 +189,7 @@ const ROLE_STYLES = {
   mesa: { bg: `${C.teal}22`, border: `${C.teal}55`, color: C.teal },
   mesero: { bg: `${C.orange}22`, border: `${C.orange}55`, color: C.orange },
   cajero: { bg: `${C.yellow}22`, border: `${C.yellow}55`, color: C.yellow },
+  taquero: { bg: `${C.purple}22`, border: `${C.purple}55`, color: C.purple },
 };
 
 /* ─── HEADER ─────────────────────────────────────────────────── */
