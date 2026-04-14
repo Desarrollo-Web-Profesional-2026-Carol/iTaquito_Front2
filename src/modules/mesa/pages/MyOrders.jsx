@@ -7,6 +7,7 @@ import { tablesService } from '../../../services/tables';
 import { C, FONT, glow } from '../../../styles/designTokens';
 import { usePedirCuenta } from '../../../hooks/usePedirCuenta';
 import { PayConfirmModal } from '../components/PayConfirmModal';
+import ConfirmModal from '../../../components/common/ConfirmModal';
 import {
   ClipboardList, UtensilsCrossed, ShoppingBag,
   Clock, CheckCircle, ChefHat, Truck, XCircle,
@@ -59,35 +60,49 @@ function ClientHeader({ totalItems, onLogout }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { mesaNombre, iMesaId } = useAuth();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
   return (
-    <header style={{ background: C.bgAccent, borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 200, boxShadow: '0 2px 16px rgba(0,0,0,0.4)', fontFamily: FONT }}>
-      <div style={{ height: '3px', background: `linear-gradient(90deg, ${C.teal}, ${C.teal}88, transparent)` }} />
-      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 20px', height: '54px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div onClick={() => navigate('/menu')} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${C.teal}22`, border: `1.5px solid ${C.teal}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Utensils size={15} color={C.teal} />
+    <>
+      <header style={{ background: C.bgAccent, borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 200, boxShadow: '0 2px 16px rgba(0,0,0,0.4)', fontFamily: FONT }}>
+        <div style={{ height: '3px', background: `linear-gradient(90deg, ${C.teal}, ${C.teal}88, transparent)` }} />
+        <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 20px', height: '54px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div onClick={() => navigate('/menu')} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${C.teal}22`, border: `1.5px solid ${C.teal}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Utensils size={15} color={C.teal} />
+            </div>
+            <span style={{ color: C.cream, fontWeight: '800', fontSize: '16px' }}>iTaquito</span>
           </div>
-          <span style={{ color: C.cream, fontWeight: '800', fontSize: '16px' }}>iTaquito</span>
+          {(mesaNombre || iMesaId) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: `${C.teal}12`, border: `1px solid ${C.teal}33`, borderRadius: '20px', padding: '4px 10px', color: C.teal, fontSize: '12px', fontWeight: '700' }}>
+              <MapPin size={11} /> {mesaNombre || `Mesa ${iMesaId}`}
+            </div>
+          )}
+          <div style={{ flex: 1 }} />
+          <NavBtn label="Menú"        active={pathname === '/menu'}      color={C.teal}   onClick={() => navigate('/menu')}><UtensilsCrossed size={14} /></NavBtn>
+          <NavBtn label="Mi Pedido"   active={pathname === '/my-order'}  color={C.pink}   onClick={() => navigate('/my-order')}>
+            <ShoppingBag size={14} />
+            {totalItems > 0 && <span style={{ background: C.pink, color: '#fff', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{totalItems}</span>}
+          </NavBtn>
+          <NavBtn label="Mis Pedidos" active={pathname === '/my-orders'} color={C.purple} onClick={() => navigate('/my-orders')}><ClipboardList size={14} /></NavBtn>
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            style={{ background: `${C.pink}12`, border: `1px solid ${C.pink}33`, borderRadius: '8px', padding: '6px 12px', color: C.pink, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', transition: 'all 0.18s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = `${C.pink}22`; e.currentTarget.style.borderColor = C.pink; }}
+            onMouseLeave={e => { e.currentTarget.style.background = `${C.pink}12`; e.currentTarget.style.borderColor = `${C.pink}33`; }}>
+            <LogOut size={13} /> Salir
+          </button>
         </div>
-        {(mesaNombre || iMesaId) && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: `${C.teal}12`, border: `1px solid ${C.teal}33`, borderRadius: '20px', padding: '4px 10px', color: C.teal, fontSize: '12px', fontWeight: '700' }}>
-            <MapPin size={11} /> {mesaNombre || `Mesa ${iMesaId}`}
-          </div>
-        )}
-        <div style={{ flex: 1 }} />
-        <NavBtn label="Menú"        active={pathname === '/menu'}      color={C.teal}   onClick={() => navigate('/menu')}><UtensilsCrossed size={14} /></NavBtn>
-        <NavBtn label="Mi Pedido"   active={pathname === '/my-order'}  color={C.pink}   onClick={() => navigate('/my-order')}>
-          <ShoppingBag size={14} />
-          {totalItems > 0 && <span style={{ background: C.pink, color: '#fff', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{totalItems}</span>}
-        </NavBtn>
-        <NavBtn label="Mis Pedidos" active={pathname === '/my-orders'} color={C.purple} onClick={() => navigate('/my-orders')}><ClipboardList size={14} /></NavBtn>
-        <button onClick={onLogout} style={{ background: `${C.pink}12`, border: `1px solid ${C.pink}33`, borderRadius: '8px', padding: '6px 12px', color: C.pink, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', transition: 'all 0.18s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = `${C.pink}22`; e.currentTarget.style.borderColor = C.pink; }}
-          onMouseLeave={e => { e.currentTarget.style.background = `${C.pink}12`; e.currentTarget.style.borderColor = `${C.pink}33`; }}>
-          <LogOut size={13} /> Salir
-        </button>
-      </div>
-    </header>
+      </header>
+
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={() => { setShowLogoutModal(false); onLogout(); }}
+        title="¿Cerrar sesión?"
+        message="Se cerrará tu sesión en esta mesa. Tus pedidos activos seguirán en proceso."
+      />
+    </>
   );
 }
 
@@ -147,104 +162,110 @@ function ClientOrderCard({ order }) {
 /* ─── ADMIN ORDER CARD ───────────────────────────────────────── */
 function AdminOrderCard({ order, onChangeStatus, onCancel, updating }) {
   const [open, setOpen] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const estado = ESTADO[order.sEstado] || ESTADO.pendiente;
   const siguientes = FLUJO[order.sEstado] || [];
   const isUpdating = updating === order.id;
 
   return (
-    <div style={{
-      background: C.bgCard,
-      border: `1.5px solid ${open ? estado.color + '55' : C.border}`,
-      borderRadius: '16px', overflow: 'hidden',
-      transition: 'all 0.2s',
-      boxShadow: open ? `0 4px 20px rgba(0,0,0,0.2)` : '0 2px 8px rgba(0,0,0,0.1)',
-    }}>
-      <div style={{ height: '3px', background: `linear-gradient(90deg, ${estado.color}, ${estado.color}66)` }} />
+    <>
+      <div style={{
+        background: C.bgCard,
+        border: `1.5px solid ${open ? estado.color + '55' : C.border}`,
+        borderRadius: '16px', overflow: 'hidden',
+        transition: 'all 0.2s',
+        boxShadow: open ? `0 4px 20px rgba(0,0,0,0.2)` : '0 2px 8px rgba(0,0,0,0.1)',
+      }}>
+        <div style={{ height: '3px', background: `linear-gradient(90deg, ${estado.color}, ${estado.color}66)` }} />
 
-      {/* Header clickeable */}
-      <div onClick={() => setOpen(p => !p)} style={{ padding: '14px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', background: open ? `${estado.color}06` : 'transparent', transition: 'background 0.2s' }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `${estado.color}15`, border: `1px solid ${estado.color}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          {isUpdating ? <Loader size={16} color={estado.color} style={{ animation: 'spin 0.8s linear infinite' }} /> : <estado.Icon size={16} color={estado.color} />}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <span style={{ color: C.textPrimary, fontWeight: '800', fontSize: '14px' }}>Pedido #{order.id}</span>
-            <StatusBadge estado={order.sEstado} />
+        <div onClick={() => setOpen(p => !p)} style={{ padding: '14px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', background: open ? `${estado.color}06` : 'transparent', transition: 'background 0.2s' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: `${estado.color}15`, border: `1px solid ${estado.color}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            {isUpdating ? <Loader size={16} color={estado.color} style={{ animation: 'spin 0.8s linear infinite' }} /> : <estado.Icon size={16} color={estado.color} />}
           </div>
-          <div style={{ display: 'flex', gap: '10px', marginTop: '3px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '11px', color: C.textMuted, display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <TableProperties size={10} /> {order.mesa?.sNombre || `Mesa ${order.iMesaId}`}
-            </span>
-            <span style={{ fontSize: '11px', color: C.textMuted, display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <Clock size={10} /> {new Date(order.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-            </span>
-            <span style={{ fontSize: '11px', color: C.textMuted }}>
-              {(order.items || []).length} producto{(order.items?.length || 0) !== 1 ? 's' : ''}
-            </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ color: C.textPrimary, fontWeight: '800', fontSize: '14px' }}>Pedido #{order.id}</span>
+              <StatusBadge estado={order.sEstado} />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '3px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '11px', color: C.textMuted, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <TableProperties size={10} /> {order.mesa?.sNombre || `Mesa ${order.iMesaId}`}
+              </span>
+              <span style={{ fontSize: '11px', color: C.textMuted, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <Clock size={10} /> {new Date(order.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+              <span style={{ fontSize: '11px', color: C.textMuted }}>
+                {(order.items || []).length} producto{(order.items?.length || 0) !== 1 ? 's' : ''}
+              </span>
+            </div>
+          </div>
+          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+            <div style={{ fontSize: '17px', fontWeight: '800', color: C.orange }}>${parseFloat(order.dTotal || 0).toFixed(2)}</div>
+            <ChevronDown size={14} color={C.textMuted} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', marginTop: '2px' }} />
           </div>
         </div>
-        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontSize: '17px', fontWeight: '800', color: C.orange }}>${parseFloat(order.dTotal || 0).toFixed(2)}</div>
-          <ChevronDown size={14} color={C.textMuted} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', marginTop: '2px' }} />
-        </div>
+
+        {open && (
+          <div style={{ borderTop: `1px solid ${C.border}`, padding: '14px 18px 18px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+              {(order.items || []).map((item, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: C.bg, borderRadius: '8px' }}>
+                  <span style={{ color: C.textSecondary, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                    <span style={{ background: `${C.orange}20`, color: C.orange, borderRadius: '5px', padding: '1px 6px', fontSize: '11px', fontWeight: '700' }}>×{item.iCantidad}</span>
+                    {item.producto?.sNombre || `Producto #${item.iProductoId}`}
+                    {item.sNotas && <span style={{ color: C.textMuted, fontSize: '11px' }}>({item.sNotas})</span>}
+                  </span>
+                  <span style={{ color: C.textPrimary, fontSize: '13px', fontWeight: '700' }}>${parseFloat(item.dSubtotal || 0).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            {order.sNotas && (
+              <div style={{ background: `${C.yellow}10`, border: `1px solid ${C.yellow}30`, borderRadius: '8px', padding: '8px 12px', marginBottom: '14px', fontSize: '12px', color: C.textSecondary }}>
+                <span style={{ color: C.yellow, fontWeight: '700' }}>Nota: </span>{order.sNotas}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: `${C.orange}10`, border: `1px solid ${C.orange}25`, borderRadius: '10px', padding: '10px 14px', marginBottom: '14px' }}>
+              <span style={{ color: C.textSecondary, fontWeight: '700', fontSize: '13px' }}>Total</span>
+              <span style={{ color: C.orange, fontWeight: '900', fontSize: '18px' }}>${parseFloat(order.dTotal || 0).toFixed(2)}</span>
+            </div>
+
+            {siguientes.length > 0 && (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {siguientes.filter(s => s !== 'cancelado').map(sig => {
+                  const e = ESTADO[sig];
+                  return (
+                    <button key={sig} onClick={() => onChangeStatus(order.id, sig)} disabled={isUpdating}
+                      style={{ flex: 1, minWidth: '120px', background: e.color, border: 'none', borderRadius: '10px', padding: '10px 14px', color: '#fff', fontFamily: FONT, fontWeight: '700', fontSize: '13px', cursor: isUpdating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: isUpdating ? 0.6 : 1, transition: 'all 0.18s', boxShadow: `0 4px 14px ${e.color}44` }}
+                      onMouseEnter={ev => { if (!isUpdating) ev.currentTarget.style.opacity = '0.85'; }}
+                      onMouseLeave={ev => { ev.currentTarget.style.opacity = isUpdating ? '0.6' : '1'; }}>
+                      <e.Icon size={14} /> {e.label}
+                    </button>
+                  );
+                })}
+                {siguientes.includes('cancelado') && (
+                  <button onClick={() => setShowCancelModal(true)} disabled={isUpdating}
+                    style={{ background: 'none', border: `1.5px solid ${C.pink}55`, borderRadius: '10px', padding: '10px 14px', color: C.pink, fontFamily: FONT, fontWeight: '700', fontSize: '13px', cursor: isUpdating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', opacity: isUpdating ? 0.6 : 1, transition: 'all 0.18s' }}
+                    onMouseEnter={ev => { if (!isUpdating) { ev.currentTarget.style.background = `${C.pink}12`; ev.currentTarget.style.borderColor = C.pink; } }}
+                    onMouseLeave={ev => { ev.currentTarget.style.background = 'none'; ev.currentTarget.style.borderColor = `${C.pink}55`; }}>
+                    <XCircle size={14} /> Cancelar
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Detalle expandido */}
-      {open && (
-        <div style={{ borderTop: `1px solid ${C.border}`, padding: '14px 18px 18px' }}>
-          {/* Items */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
-            {(order.items || []).map((item, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: C.bg, borderRadius: '8px' }}>
-                <span style={{ color: C.textSecondary, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '7px' }}>
-                  <span style={{ background: `${C.orange}20`, color: C.orange, borderRadius: '5px', padding: '1px 6px', fontSize: '11px', fontWeight: '700' }}>×{item.iCantidad}</span>
-                  {item.producto?.sNombre || `Producto #${item.iProductoId}`}
-                  {item.sNotas && <span style={{ color: C.textMuted, fontSize: '11px' }}>({item.sNotas})</span>}
-                </span>
-                <span style={{ color: C.textPrimary, fontSize: '13px', fontWeight: '700' }}>${parseFloat(item.dSubtotal || 0).toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-
-          {order.sNotas && (
-            <div style={{ background: `${C.yellow}10`, border: `1px solid ${C.yellow}30`, borderRadius: '8px', padding: '8px 12px', marginBottom: '14px', fontSize: '12px', color: C.textSecondary }}>
-              <span style={{ color: C.yellow, fontWeight: '700' }}>Nota: </span>{order.sNotas}
-            </div>
-          )}
-
-          {/* Total */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: `${C.orange}10`, border: `1px solid ${C.orange}25`, borderRadius: '10px', padding: '10px 14px', marginBottom: '14px' }}>
-            <span style={{ color: C.textSecondary, fontWeight: '700', fontSize: '13px' }}>Total</span>
-            <span style={{ color: C.orange, fontWeight: '900', fontSize: '18px' }}>${parseFloat(order.dTotal || 0).toFixed(2)}</span>
-          </div>
-
-          {/* Botones de acción */}
-          {siguientes.length > 0 && (
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {siguientes.filter(s => s !== 'cancelado').map(sig => {
-                const e = ESTADO[sig];
-                return (
-                  <button key={sig} onClick={() => onChangeStatus(order.id, sig)} disabled={isUpdating}
-                    style={{ flex: 1, minWidth: '120px', background: e.color, border: 'none', borderRadius: '10px', padding: '10px 14px', color: '#fff', fontFamily: FONT, fontWeight: '700', fontSize: '13px', cursor: isUpdating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', opacity: isUpdating ? 0.6 : 1, transition: 'all 0.18s', boxShadow: `0 4px 14px ${e.color}44` }}
-                    onMouseEnter={ev => { if (!isUpdating) ev.currentTarget.style.opacity = '0.85'; }}
-                    onMouseLeave={ev => { ev.currentTarget.style.opacity = isUpdating ? '0.6' : '1'; }}>
-                    <e.Icon size={14} /> {e.label}
-                  </button>
-                );
-              })}
-              {siguientes.includes('cancelado') && (
-                <button onClick={() => onCancel(order.id)} disabled={isUpdating}
-                  style={{ background: 'none', border: `1.5px solid ${C.pink}55`, borderRadius: '10px', padding: '10px 14px', color: C.pink, fontFamily: FONT, fontWeight: '700', fontSize: '13px', cursor: isUpdating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', opacity: isUpdating ? 0.6 : 1, transition: 'all 0.18s' }}
-                  onMouseEnter={ev => { if (!isUpdating) { ev.currentTarget.style.background = `${C.pink}12`; ev.currentTarget.style.borderColor = C.pink; } }}
-                  onMouseLeave={ev => { ev.currentTarget.style.background = 'none'; ev.currentTarget.style.borderColor = `${C.pink}55`; }}>
-                  <XCircle size={14} /> Cancelar
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+      <ConfirmModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={() => { setShowCancelModal(false); onCancel(order.id); }}
+        title="¿Cancelar pedido?"
+        message={`¿Estás seguro de que deseas cancelar el Pedido #${order.id}? Esta acción no se puede deshacer.`}
+      />
+    </>
   );
 }
 
@@ -260,7 +281,6 @@ function AdminOrdersView() {
   const [error,      setError]      = useState('');
   const [toast,      setToast]      = useState(null);
 
-  // Filtros
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const [filtroMesa,   setFiltroMesa]   = useState('todas');
   const [filtroFecha,  setFiltroFecha]  = useState('');
@@ -291,8 +311,6 @@ function AdminOrdersView() {
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
-
-  // Auto-refresh cada 30s
   useEffect(() => {
     const t = setInterval(loadData, 30000);
     return () => clearInterval(t);
@@ -326,7 +344,6 @@ function AdminOrdersView() {
     }
   };
 
-  // Aplicar filtros
   const filtered = orders.filter(o => {
     if (filtroEstado !== 'todos' && o.sEstado !== filtroEstado) return false;
     if (filtroMesa   !== 'todas' && String(o.iMesaId) !== filtroMesa) return false;
@@ -343,7 +360,6 @@ function AdminOrdersView() {
     return true;
   });
 
-  // Agrupar por estado para resumen
   const resumen = Object.keys(ESTADO).reduce((acc, k) => {
     acc[k] = orders.filter(o => o.sEstado === k).length;
     return acc;
@@ -359,7 +375,6 @@ function AdminOrdersView() {
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px 80px' }}>
         <Breadcrumb />
 
-        {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
@@ -380,7 +395,6 @@ function AdminOrdersView() {
           </button>
         </div>
 
-        {/* Resumen por estado */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '24px' }}>
           {Object.entries(ESTADO).map(([key, { label, color, Icon }]) => (
             <button key={key} onClick={() => setFiltroEstado(filtroEstado === key ? 'todos' : key)}
@@ -394,27 +408,19 @@ function AdminOrdersView() {
           ))}
         </div>
 
-        {/* Filtros */}
         <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '16px 18px', marginBottom: '20px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
-          {/* Búsqueda */}
           <div style={{ position: 'relative', flex: '1', minWidth: '160px' }}>
             <Search size={14} color={C.textMuted} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por # o mesa..."
               style={{ width: '100%', background: C.bg, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '7px 10px 7px 30px', color: C.textPrimary, fontFamily: FONT, fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
           </div>
-
-          {/* Filtro mesa */}
           <select value={filtroMesa} onChange={e => setFiltroMesa(e.target.value)}
             style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '7px 10px', color: C.textSecondary, fontFamily: FONT, fontSize: '13px', cursor: 'pointer', outline: 'none' }}>
             <option value="todas">Todas las mesas</option>
             {mesas.map(m => <option key={m.id} value={String(m.id)}>{m.sNombre || `Mesa ${m.id}`}</option>)}
           </select>
-
-          {/* Filtro fecha */}
           <input type="date" value={filtroFecha} onChange={e => setFiltroFecha(e.target.value)}
             style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '7px 10px', color: filtroFecha ? C.textPrimary : C.textMuted, fontFamily: FONT, fontSize: '13px', outline: 'none', cursor: 'pointer' }} />
-
-          {/* Limpiar filtros */}
           {(filtroEstado !== 'todos' || filtroMesa !== 'todas' || filtroFecha || search) && (
             <button onClick={() => { setFiltroEstado('todos'); setFiltroMesa('todas'); setFiltroFecha(''); setSearch(''); }}
               style={{ background: `${C.pink}12`, border: `1px solid ${C.pink}33`, borderRadius: '8px', padding: '7px 12px', color: C.pink, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
@@ -423,14 +429,12 @@ function AdminOrdersView() {
           )}
         </div>
 
-        {/* Error */}
         {error && (
           <div style={{ background: `${C.pink}12`, border: `1px solid ${C.pink}40`, borderRadius: '12px', padding: '12px 16px', marginBottom: '16px', color: C.pink, fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertCircle size={14} /> {error}
           </div>
         )}
 
-        {/* Lista */}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '60px 24px' }}>
             <div style={{ display: 'inline-block', width: '36px', height: '36px', border: `3px solid ${C.border}`, borderTopColor: C.purple, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
@@ -457,7 +461,6 @@ function AdminOrdersView() {
         )}
       </main>
 
-      {/* Toast */}
       {toast && (
         <div style={{ position: 'fixed', bottom: '28px', right: '28px', zIndex: 600, background: C.bgCard, border: `1.5px solid ${toast.type === 'success' ? C.teal : C.pink}55`, borderRadius: '14px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '10px', fontFamily: FONT, boxShadow: '0 8px 32px rgba(0,0,0,0.4)', animation: 'slideIn 0.3s ease', maxWidth: '340px' }}>
           {toast.type === 'success' ? <CheckCircle size={18} color={C.teal} /> : <XCircle size={18} color={C.pink} />}
@@ -474,18 +477,18 @@ function AdminOrdersView() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   VISTA CLIENTE (MyOrders original)
+   VISTA CLIENTE
 ═══════════════════════════════════════════════════════════════ */
 function ClientOrdersView() {
   const navigate = useNavigate();
   const { loginAt, logout, getMesaId, mesaNombre } = useAuth();
   const { totalItems } = useCart();
-  const [orders,     setOrders]     = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [orders,       setOrders]       = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [refreshing,   setRefreshing]   = useState(false);
   const [animatingEnd, setAnimatingEnd] = useState(false);
-  const [error,      setError]      = useState('');
-  const [showPayModal, setShowPayModal] = useState(false);
+  const [error,        setError]        = useState('');
+  const [showPayModal,    setShowPayModal]    = useState(false);
 
   const iMesaId = getMesaId();
 
@@ -640,17 +643,14 @@ function ClientOrdersView() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ENTRY POINT — detecta rol y renderiza la vista correcta
+   ENTRY POINT
 ═══════════════════════════════════════════════════════════════ */
 const Orders = () => {
   const { user } = useAuth();
-
   if (!user) return null;
-
   if (user.rol === 'admin' || user.rol === 'cajero' || user.rol === 'mesero') {
     return <AdminOrdersView />;
   }
-
   return <ClientOrdersView />;
 };
 
