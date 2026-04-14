@@ -6,6 +6,7 @@ import { ordersService } from '../../../services/orders';
 import { C, FONT, glow } from '../../../styles/designTokens';
 import { usePedirCuenta } from '../../../hooks/usePedirCuenta';
 import { PayConfirmModal } from '../components/PayConfirmModal';
+import ConfirmModal from '../../../components/common/ConfirmModal';
 import {
   ShoppingBag, UtensilsCrossed, Trash2, Plus, Minus,
   ChevronRight, CheckCircle, Receipt, AlertCircle,
@@ -55,96 +56,123 @@ function ClientHeader({ totalItems, onLogout }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { mesaNombre, iMesaId } = useAuth();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   return (
-    <header style={{
-      background: C.bgAccent, borderBottom: `1px solid ${C.border}`,
-      position: 'sticky', top: 0, zIndex: 200,
-      boxShadow: '0 2px 16px rgba(0,0,0,0.4)', fontFamily: FONT,
-    }}>
-      <div style={{ height: '3px', background: `linear-gradient(90deg, ${C.teal}, ${C.teal}88, transparent)` }} />
-      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 20px', height: '54px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <>
+      <header style={{
+        background: C.bgAccent, borderBottom: `1px solid ${C.border}`,
+        position: 'sticky', top: 0, zIndex: 200,
+        boxShadow: '0 2px 16px rgba(0,0,0,0.4)', fontFamily: FONT,
+      }}>
+        <div style={{ height: '3px', background: `linear-gradient(90deg, ${C.teal}, ${C.teal}88, transparent)` }} />
+        <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 20px', height: '54px', display: 'flex', alignItems: 'center', gap: '12px' }}>
 
-        <div onClick={() => navigate('/menu')} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${C.teal}22`, border: `1.5px solid ${C.teal}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Utensils size={15} color={C.teal} />
+          <div onClick={() => navigate('/menu')} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flexShrink: 0 }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `${C.teal}22`, border: `1.5px solid ${C.teal}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Utensils size={15} color={C.teal} />
+            </div>
+            <span style={{ color: C.cream, fontWeight: '800', fontSize: '16px' }}>iTaquito</span>
           </div>
-          <span style={{ color: C.cream, fontWeight: '800', fontSize: '16px' }}>iTaquito</span>
-        </div>
 
-        {(mesaNombre || iMesaId) && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: `${C.teal}12`, border: `1px solid ${C.teal}33`, borderRadius: '20px', padding: '4px 10px', color: C.teal, fontSize: '12px', fontWeight: '700' }}>
-            <MapPin size={11} /> {mesaNombre || `Mesa ${iMesaId}`}
-          </div>
-        )}
-
-        <div style={{ flex: 1 }} />
-
-        <NavBtn label="Menú" active={pathname === '/menu'} color={C.teal} onClick={() => navigate('/menu')}>
-          <UtensilsCrossed size={14} />
-        </NavBtn>
-
-        <NavBtn label="Mi Pedido" active={pathname === '/my-order'} color={C.pink} onClick={() => navigate('/my-order')}>
-          <ShoppingBag size={14} />
-          {totalItems > 0 && (
-            <span style={{ background: C.pink, color: '#fff', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {totalItems}
-            </span>
+          {(mesaNombre || iMesaId) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: `${C.teal}12`, border: `1px solid ${C.teal}33`, borderRadius: '20px', padding: '4px 10px', color: C.teal, fontSize: '12px', fontWeight: '700' }}>
+              <MapPin size={11} /> {mesaNombre || `Mesa ${iMesaId}`}
+            </div>
           )}
-        </NavBtn>
 
-        <NavBtn label="Mis Pedidos" active={pathname === '/my-orders'} color={C.purple} onClick={() => navigate('/my-orders')}>
-          <ClipboardList size={14} />
-        </NavBtn>
+          <div style={{ flex: 1 }} />
 
-        <button onClick={onLogout} style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: '8px', padding: '6px 10px', color: C.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: FONT, fontWeight: '700', fontSize: '11px', transition: 'all 0.18s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = C.pink; e.currentTarget.style.borderColor = C.pink + '55'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = C.textMuted; e.currentTarget.style.borderColor = C.border; }}>
-          <LogOut size={13} /> Salir
-        </button>
-      </div>
-    </header>
+          <NavBtn label="Menú" active={pathname === '/menu'} color={C.teal} onClick={() => navigate('/menu')}>
+            <UtensilsCrossed size={14} />
+          </NavBtn>
+
+          <NavBtn label="Mi Pedido" active={pathname === '/my-order'} color={C.pink} onClick={() => navigate('/my-order')}>
+            <ShoppingBag size={14} />
+            {totalItems > 0 && (
+              <span style={{ background: C.pink, color: '#fff', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {totalItems}
+              </span>
+            )}
+          </NavBtn>
+
+          <NavBtn label="Mis Pedidos" active={pathname === '/my-orders'} color={C.purple} onClick={() => navigate('/my-orders')}>
+            <ClipboardList size={14} />
+          </NavBtn>
+
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            style={{ background: 'transparent', border: `1px solid ${C.border}`, borderRadius: '8px', padding: '6px 10px', color: C.textMuted, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: FONT, fontWeight: '700', fontSize: '11px', transition: 'all 0.18s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = C.pink; e.currentTarget.style.borderColor = C.pink + '55'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = C.textMuted; e.currentTarget.style.borderColor = C.border; }}>
+            <LogOut size={13} /> Salir
+          </button>
+        </div>
+      </header>
+
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={() => { setShowLogoutModal(false); onLogout(); }}
+        title="¿Cerrar sesión?"
+        message="Se cerrará tu sesión en esta mesa. Tus pedidos activos seguirán en proceso."
+      />
+    </>
   );
 }
 
 /* ─── ITEM CARD ───────────────────────────────────────────────── */
 function ItemCard({ item, onIncrement, onDecrement, onRemove }) {
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
   const subtotal = (parseFloat(item.precio) * item.qty).toFixed(2);
+
   return (
-    <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '14px 16px', display: 'flex', gap: '12px', alignItems: 'center', transition: 'border-color 0.2s' }}>
-      {item.imagen ? (
-        <img src={item.imagen} alt={item.nombre} style={{ width: '56px', height: '56px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }} />
-      ) : (
-        <div style={{ width: '56px', height: '56px', borderRadius: '10px', background: `${C.pink}12`, border: `1px solid ${C.pink}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <UtensilsCrossed size={22} color={C.pinkDim} />
+    <>
+      <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '14px 16px', display: 'flex', gap: '12px', alignItems: 'center', transition: 'border-color 0.2s' }}>
+        {item.imagen ? (
+          <img src={item.imagen} alt={item.nombre} style={{ width: '56px', height: '56px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }} />
+        ) : (
+          <div style={{ width: '56px', height: '56px', borderRadius: '10px', background: `${C.pink}12`, border: `1px solid ${C.pink}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <UtensilsCrossed size={22} color={C.pinkDim} />
+          </div>
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: '700', color: C.textPrimary, fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.nombre}</div>
+          <div style={{ color: C.pink, fontWeight: '700', fontSize: '13px', marginTop: '2px' }}>${(parseFloat(item.precio)).toFixed(2)} c/u</div>
         </div>
-      )}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: '700', color: C.textPrimary, fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.nombre}</div>
-        <div style={{ color: C.pink, fontWeight: '700', fontSize: '13px', marginTop: '2px' }}>${(parseFloat(item.precio)).toFixed(2)} c/u</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+          <button onClick={() => onDecrement(item.id)} style={{ width: '28px', height: '28px', borderRadius: '8px', border: `1.5px solid ${C.border}`, background: 'transparent', color: C.textSecondary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = C.pink; e.currentTarget.style.color = C.pink; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSecondary; }}>
+            <Minus size={12} />
+          </button>
+          <span style={{ fontWeight: '800', color: C.textPrimary, fontSize: '15px', minWidth: '22px', textAlign: 'center' }}>{item.qty}</span>
+          <button onClick={() => onIncrement(item)} style={{ width: '28px', height: '28px', borderRadius: '8px', border: `1.5px solid ${C.pink}55`, background: `${C.pink}12`, color: C.pink, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = `${C.pink}22`; }}
+            onMouseLeave={e => { e.currentTarget.style.background = `${C.pink}12`; }}>
+            <Plus size={12} />
+          </button>
+        </div>
+        <div style={{ minWidth: '60px', textAlign: 'right', flexShrink: 0 }}>
+          <div style={{ color: C.orange, fontWeight: '800', fontSize: '14px' }}>${subtotal}</div>
+          <button
+            onClick={() => setShowRemoveModal(true)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, padding: '2px', marginTop: '2px', display: 'inline-flex' }}
+            onMouseEnter={e => e.currentTarget.style.color = C.pink}
+            onMouseLeave={e => e.currentTarget.style.color = C.textMuted}>
+            <Trash2 size={13} />
+          </button>
+        </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-        <button onClick={() => onDecrement(item.id)} style={{ width: '28px', height: '28px', borderRadius: '8px', border: `1.5px solid ${C.border}`, background: 'transparent', color: C.textSecondary, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = C.pink; e.currentTarget.style.color = C.pink; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textSecondary; }}>
-          <Minus size={12} />
-        </button>
-        <span style={{ fontWeight: '800', color: C.textPrimary, fontSize: '15px', minWidth: '22px', textAlign: 'center' }}>{item.qty}</span>
-        <button onClick={() => onIncrement(item)} style={{ width: '28px', height: '28px', borderRadius: '8px', border: `1.5px solid ${C.pink}55`, background: `${C.pink}12`, color: C.pink, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = `${C.pink}22`; }}
-          onMouseLeave={e => { e.currentTarget.style.background = `${C.pink}12`; }}>
-          <Plus size={12} />
-        </button>
-      </div>
-      <div style={{ minWidth: '60px', textAlign: 'right', flexShrink: 0 }}>
-        <div style={{ color: C.orange, fontWeight: '800', fontSize: '14px' }}>${subtotal}</div>
-        <button onClick={() => onRemove(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, padding: '2px', marginTop: '2px', display: 'inline-flex' }}
-          onMouseEnter={e => e.currentTarget.style.color = C.pink}
-          onMouseLeave={e => e.currentTarget.style.color = C.textMuted}>
-          <Trash2 size={13} />
-        </button>
-      </div>
-    </div>
+
+      <ConfirmModal
+        isOpen={showRemoveModal}
+        onClose={() => setShowRemoveModal(false)}
+        onConfirm={() => { setShowRemoveModal(false); onRemove(item.id); }}
+        title="¿Quitar producto?"
+        message={`¿Deseas eliminar "${item.nombre}" de tu plato?`}
+      />
+    </>
   );
 }
 
@@ -192,6 +220,7 @@ function OrderSuccess({ onGoMenu, onViewOrders, platosEnviados }) {
 function PlateTab({ plate, active, itemCount, onSelect, onRemove, onRename, canRemove }) {
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(plate.label);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
 
   const handleRenameSubmit = (e) => {
     e.preventDefault();
@@ -200,53 +229,62 @@ function PlateTab({ plate, active, itemCount, onSelect, onRemove, onRename, canR
   };
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0,
-      background: active ? `${C.pink}15` : C.bgCard,
-      border: `1.5px solid ${active ? C.pink : C.border}`,
-      borderRadius: '12px', padding: '6px 10px',
-      cursor: 'pointer', transition: 'all 0.2s',
-      boxShadow: active ? glow(C.pink, '33') : 'none',
-    }} onClick={() => !editing && onSelect(plate.id)}>
-      {editing ? (
-        <form onSubmit={handleRenameSubmit} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <input
-            autoFocus
-            value={label}
-            onChange={e => setLabel(e.target.value)}
-            onClick={e => e.stopPropagation()}
-            style={{ background: 'transparent', border: 'none', outline: 'none', color: C.textPrimary, fontFamily: FONT, fontWeight: '700', fontSize: '12px', width: '80px' }}
-            onBlur={handleRenameSubmit}
-          />
-        </form>
-      ) : (
-        <span style={{ color: active ? C.pink : C.textSecondary, fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap' }}>
-          {plate.label}
-        </span>
-      )}
+    <>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0,
+        background: active ? `${C.pink}15` : C.bgCard,
+        border: `1.5px solid ${active ? C.pink : C.border}`,
+        borderRadius: '12px', padding: '6px 10px',
+        cursor: 'pointer', transition: 'all 0.2s',
+        boxShadow: active ? glow(C.pink, '33') : 'none',
+      }} onClick={() => !editing && onSelect(plate.id)}>
+        {editing ? (
+          <form onSubmit={handleRenameSubmit} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <input
+              autoFocus value={label} onChange={e => setLabel(e.target.value)}
+              onClick={e => e.stopPropagation()}
+              style={{ background: 'transparent', border: 'none', outline: 'none', color: C.textPrimary, fontFamily: FONT, fontWeight: '700', fontSize: '12px', width: '80px' }}
+              onBlur={handleRenameSubmit}
+            />
+          </form>
+        ) : (
+          <span style={{ color: active ? C.pink : C.textSecondary, fontWeight: '700', fontSize: '12px', whiteSpace: 'nowrap' }}>
+            {plate.label}
+          </span>
+        )}
 
-      {itemCount > 0 && (
-        <span style={{ background: active ? C.pink : C.textMuted, color: '#fff', borderRadius: '99px', padding: '0 5px', fontSize: '9px', fontWeight: '900', minWidth: '16px', height: '16px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-          {itemCount}
-        </span>
-      )}
+        {itemCount > 0 && (
+          <span style={{ background: active ? C.pink : C.textMuted, color: '#fff', borderRadius: '99px', padding: '0 5px', fontSize: '9px', fontWeight: '900', minWidth: '16px', height: '16px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            {itemCount}
+          </span>
+        )}
 
-      {active && !editing && (
-        <button onClick={e => { e.stopPropagation(); setEditing(true); }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, padding: '1px', display: 'flex' }}>
-          <Pencil size={9} />
-        </button>
-      )}
+        {active && !editing && (
+          <button onClick={e => { e.stopPropagation(); setEditing(true); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, padding: '1px', display: 'flex' }}>
+            <Pencil size={9} />
+          </button>
+        )}
 
-      {canRemove && (
-        <button onClick={e => { e.stopPropagation(); onRemove(plate.id); }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, padding: '1px', display: 'flex' }}
-          onMouseEnter={e => e.currentTarget.style.color = C.pink}
-          onMouseLeave={e => e.currentTarget.style.color = C.textMuted}>
-          <X size={11} />
-        </button>
-      )}
-    </div>
+        {canRemove && (
+          <button
+            onClick={e => { e.stopPropagation(); setShowRemoveModal(true); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, padding: '1px', display: 'flex' }}
+            onMouseEnter={e => e.currentTarget.style.color = C.pink}
+            onMouseLeave={e => e.currentTarget.style.color = C.textMuted}>
+            <X size={11} />
+          </button>
+        )}
+      </div>
+
+      <ConfirmModal
+        isOpen={showRemoveModal}
+        onClose={() => setShowRemoveModal(false)}
+        onConfirm={() => { setShowRemoveModal(false); onRemove(plate.id); }}
+        title="¿Eliminar plato?"
+        message={`¿Deseas eliminar "${plate.label}" y todos sus productos?`}
+      />
+    </>
   );
 }
 
@@ -274,7 +312,7 @@ const MyOrder = () => {
 
   const { ejecutar: ejecutarPago, loading: payLoading, error: payError, clearError: clearPayError } = usePedirCuenta({
     iMesaId,
-    onEnPago:    useCallback(() => navigate('/menu'), [navigate]),
+    onEnPago:     useCallback(() => navigate('/menu'), [navigate]),
     onDisponible: useCallback(() => navigate('/menu'), [navigate]),
   });
 
@@ -282,14 +320,10 @@ const MyOrder = () => {
   const handleCerrarPayModal = () => { if (!payLoading) setShowPayModal(false); };
   const handleConfirmarPago  = async () => { const ok = await ejecutarPago(); if (ok) setShowPayModal(false); };
 
-
   const nonEmptyPlates = plates.filter(p => p.items.length > 0);
 
   const handleQuickOrder = async () => {
-    if (nonEmptyPlates.length === 0) return;
-    if (!iMesaId) {
-      return;
-    }
+    if (nonEmptyPlates.length === 0 || !iMesaId) return;
     const sessionToken = localStorage.getItem('mesaSessionToken');
     setOrderingNow(true);
     try {
@@ -306,7 +340,7 @@ const MyOrder = () => {
       setOrderSuccess(true);
       setTimeout(() => setOrderSuccess(false), 2500);
     } catch (e) {
-      // error shown inline in modal
+      setOrderModalErr('Hubo un error al enviar el pedido. Intenta de nuevo.');
     } finally {
       setOrderingNow(false);
     }
@@ -318,7 +352,7 @@ const MyOrder = () => {
 
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '28px 24px 140px' }}>
         <Breadcrumb />
-        {/* Page title */}
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
           <div style={{ width: '4px', height: '26px', borderRadius: '2px', background: C.pink, boxShadow: glow(C.pink) }} />
           <div>
@@ -336,8 +370,7 @@ const MyOrder = () => {
           <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }} className="hide-scroll">
             {plates.map(plate => (
               <PlateTab
-                key={plate.id}
-                plate={plate}
+                key={plate.id} plate={plate}
                 active={plate.id === activePlateId}
                 itemCount={plate.items.length}
                 onSelect={setActivePlate}
@@ -346,25 +379,13 @@ const MyOrder = () => {
                 canRemove={plates.length > 1}
               />
             ))}
-
-            {/* Botón nuevo plato */}
-            <button
-              onClick={addPlate}
-              style={{
-                flexShrink: 0, display: 'flex', alignItems: 'center', gap: '5px',
-                background: 'transparent', border: `1.5px dashed ${C.border}`,
-                borderRadius: '12px', padding: '6px 12px',
-                color: C.textMuted, fontFamily: FONT, fontWeight: '700', fontSize: '12px',
-                cursor: 'pointer', transition: 'all 0.2s',
-              }}
+            <button onClick={addPlate}
+              style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '5px', background: 'transparent', border: `1.5px dashed ${C.border}`, borderRadius: '12px', padding: '6px 12px', color: C.textMuted, fontFamily: FONT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = C.teal; e.currentTarget.style.color = C.teal; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textMuted; }}
-            >
+              onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textMuted; }}>
               <Plus size={12} /> Nuevo plato
             </button>
           </div>
-
-          {/* Divider */}
           <div style={{ height: '1px', background: C.border }} />
         </div>
 
@@ -379,7 +400,6 @@ const MyOrder = () => {
                 {activePlate?.label}
               </span>
             </div>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
               {items.map(item => (
                 <ItemCard key={item.id} item={item} onIncrement={addItem} onDecrement={decrementItem} onRemove={removeItem} />
@@ -388,19 +408,16 @@ const MyOrder = () => {
           </>
         )}
 
-        {/* ─── RESUMEN GLOBAL (si hay items en cualquier plato) ─── */}
+        {/* ─── RESUMEN GLOBAL ─── */}
         {nonEmptyPlates.length > 0 && (
           <>
             <PapelPicado />
-
             <div style={{ background: C.bgCard, border: `1.5px solid ${C.border}`, borderRadius: '16px', padding: '20px', margin: '24px 0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                 <div style={{ width: '4px', height: '18px', borderRadius: '2px', background: C.yellow, boxShadow: glow(C.yellow) }} />
                 <h2 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: C.textPrimary }}>Resumen total</h2>
                 <Receipt size={14} color={C.textMuted} style={{ marginLeft: 'auto' }} />
               </div>
-
-              {/* Resumen por plato */}
               {nonEmptyPlates.map((plate, idx) => {
                 const subtotal = plate.items.reduce((s, i) => s + i.precio * i.qty, 0);
                 return (
@@ -423,19 +440,15 @@ const MyOrder = () => {
                   </div>
                 );
               })}
-
               <div style={{ height: '1px', background: C.border, margin: '14px 0' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: C.textPrimary, fontWeight: '700', fontSize: '15px' }}>Total</span>
                 <span style={{ color: C.yellow, fontWeight: '800', fontSize: '22px' }}>${totalPrecio.toFixed(2)}</span>
               </div>
             </div>
-
             <PapelPicado flip />
           </>
         )}
-
-
       </main>
 
       {/* ─── BARRA INFERIOR FIJA ─── */}
@@ -455,8 +468,7 @@ const MyOrder = () => {
       )}
 
       {/* Botón fijo Pedir Cuenta */}
-      <button
-        onClick={handleAbrirPayModal}
+      <button onClick={handleAbrirPayModal}
         style={{ position: 'fixed', bottom: nonEmptyPlates.length > 0 ? '82px' : '24px', left: '24px', background: C.orange, color: '#fff', border: 'none', borderRadius: '14px', padding: '12px 20px', fontFamily: FONT, fontWeight: '800', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: `0 8px 24px rgba(0,0,0,0.4), ${glow(C.orange, '66')}`, zIndex: 150, transition: 'all 0.2s' }}
         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
@@ -478,7 +490,7 @@ const MyOrder = () => {
                 <div key={plate.id} style={{ background: C.bg, borderRadius: '12px', padding: '10px 14px', border: `1px solid ${C.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <span style={{ fontWeight: '800', fontSize: '13px', color: [C.pink, C.teal, C.orange, C.purple, C.yellow][idx % 5] }}>{plate.label}</span>
-                    <span style={{ color: C.orange, fontWeight: '800', fontSize: '13px' }}>${plate.items.reduce((s,i)=>s+i.precio*i.qty,0).toFixed(2)}</span>
+                    <span style={{ color: C.orange, fontWeight: '800', fontSize: '13px' }}>${plate.items.reduce((s, i) => s + i.precio * i.qty, 0).toFixed(2)}</span>
                   </div>
                   {plate.items.map(item => (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: C.textMuted }}>
@@ -499,7 +511,9 @@ const MyOrder = () => {
             )}
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={() => setShowOrderModal(false)} disabled={orderingNow}
-                style={{ flex: 1, background: 'transparent', border: `1.5px solid ${C.border}`, borderRadius: '10px', padding: '12px', color: C.textSecondary, fontFamily: FONT, fontWeight: '700', fontSize: '14px', cursor: orderingNow ? 'not-allowed' : 'pointer' }}>Cancelar</button>
+                style={{ flex: 1, background: 'transparent', border: `1.5px solid ${C.border}`, borderRadius: '10px', padding: '12px', color: C.textSecondary, fontFamily: FONT, fontWeight: '700', fontSize: '14px', cursor: orderingNow ? 'not-allowed' : 'pointer' }}>
+                Cancelar
+              </button>
               <button onClick={handleQuickOrder} disabled={orderingNow}
                 style={{ flex: 2, background: orderingNow ? C.bgAccent : C.teal, border: `1.5px solid ${orderingNow ? C.border : C.teal}`, borderRadius: '10px', padding: '12px', color: orderingNow ? C.textMuted : '#fff', fontFamily: FONT, fontWeight: '800', fontSize: '14px', cursor: orderingNow ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: orderingNow ? 'none' : glow(C.teal, '55'), transition: 'all 0.2s' }}>
                 {orderingNow ? <><Loader size={15} style={{ animation: 'spin 0.8s linear infinite' }} /> Enviando...</> : <><CheckCircle size={15} /> Enviar a cocina</>}
@@ -516,13 +530,7 @@ const MyOrder = () => {
         </div>
       )}
 
-      <PayConfirmModal
-        isOpen={showPayModal}
-        onConfirm={handleConfirmarPago}
-        onCancel={handleCerrarPayModal}
-        loading={payLoading}
-        error={payError}
-      />
+      <PayConfirmModal isOpen={showPayModal} onConfirm={handleConfirmarPago} onCancel={handleCerrarPayModal} loading={payLoading} error={payError} />
 
       <style>{`
         @keyframes spin     { to { transform: rotate(360deg); } }
@@ -535,4 +543,3 @@ const MyOrder = () => {
 };
 
 export default MyOrder;
-
